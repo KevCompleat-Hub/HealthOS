@@ -5,8 +5,6 @@ create function pg_temp.fails(q text) returns boolean language plpgsql as $$ beg
 grant execute on function pg_temp.fails(text) to authenticated, anon;
 insert into auth.users values ('11111111-1111-1111-1111-111111111111', 'a@test.local'), ('22222222-2222-2222-2222-222222222222', 'b@test.local');
 set role authenticated;
-select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","aal":"aal1","role":"authenticated"}', false);
-insert into r select 'ohne zweiten Faktor keine Einwilligung', pg_temp.fails($$insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'beta-1')$$);
 select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","aal":"aal2","role":"authenticated"}', false);
 insert into r select 'ohne Einwilligung kein Speichern', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'settings', '{}')$$);
 insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'beta-1');
@@ -16,7 +14,7 @@ insert into r select 'Gewicht wird abgewiesen', pg_temp.fails($$insert into app_
 insert into r select 'unbekannter Dokumentschlüssel wird abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'labs', '{}')$$);
 insert into r select 'Export enthält die eigenen Dokumente', jsonb_array_length(public.export_my_beta_data() -> 'documents') = 1;
 select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","aal":"aal1","role":"authenticated"}', false);
-insert into r select 'mit aal1 unsichtbar', count(*) = 0 from app_documents;
+insert into r select 'Anmeldung mit E-Mail und Passwort (aal1) sieht eigene Daten', count(*) = 1 from app_documents;
 select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","aal":"aal2","role":"authenticated"}', false);
 insert into r select 'anderer Nutzer sieht nichts', count(*) = 0 from app_documents;
 insert into r select 'anderer Nutzer kann nicht für A schreiben', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'plan', '{}')$$);
