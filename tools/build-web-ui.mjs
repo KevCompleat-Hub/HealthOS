@@ -143,6 +143,7 @@ patch('Training: zuletzt genutzte Art vorauswählen', "const [kind, setKind] = u
 patch('Woche: Check-in zählt nicht als Tagesaufgabe', "const its = data.items.filter(i => i.date === d && i.status !== 'verschoben');", "const its = data.items.filter(i => i.date === d && i.status !== 'verschoben' && i.routine !== 'review');");
 patch('Diagramm: ganzzahlige Skala bei kleinen Werten', '{[0, max / 2].map((t, i) =>', '{(max <= 6 ? Array.from({ length: Math.floor(max) + 1 }, (_, k) => k) : [0, max / 2]).map((t, i) =>');
 patch('Diagramm: erreichtes Wochenziel voll eingefärbt', 'const weeks = trainingSeries(data, weekStart(today), 8, today);', 'const weeks = trainingSeries(data, weekStart(today), 8, today).map(x => (x.goal && x.value != null && x.value >= x.goal ? { ...x, faint: false } : x));');
+patch('Heute: Ernährungs-Idee und Zutaten-Katalog', '\n    <HabitsToday ctx={ctx} />\n', '\n    <HabitsToday ctx={ctx} />\n    <FoodTip ctx={ctx} />\n');
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -162,6 +163,7 @@ import { emptyState, browserDownloads } from './support';
 import { TodayProgress, HabitsToday, Celebrate, habitsOn } from '../beta/today';
 import { usableOffer, fixText } from '../beta/review';
 import { ScaleImport, WeightQuick } from '../beta/scale';
+import { FoodTip } from '../beta/food';
 const { ${[...used].sort().join(', ')} } = D;
 `;
 writeFileSync(path.join(root, 'apps/web/src/legacy/HealthOSApp.jsx'), header + ui + '\nexport { App, Onboarding, Settings, ReviewFlow };\n');

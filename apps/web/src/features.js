@@ -60,3 +60,6 @@ FEATURES.habitIdeas = [
 
 /** KI-Auswertung von Waagen-Screenshots anzeigen. Aktiv nur, wenn der Server einen API-Schlüssel hat (NEXT_PUBLIC_SCALE_AI=on). */
 FEATURES.scaleAi = process.env.NEXT_PUBLIC_SCALE_AI === 'on';
+
+/** Ernährungs-Ideen und Zutaten-Katalog (allgemeine Lebensmittelauswahl, Entscheidung E-12). */
+FEATURES.foodGuide = true;

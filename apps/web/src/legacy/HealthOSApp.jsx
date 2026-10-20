@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 95, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 96, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -10,6 +10,7 @@ import { emptyState, browserDownloads } from './support';
 import { TodayProgress, HabitsToday, Celebrate, habitsOn } from '../beta/today';
 import { usableOffer, fixText } from '../beta/review';
 import { ScaleImport, WeightQuick } from '../beta/scale';
+import { FoodTip } from '../beta/food';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
 /* HealthOS – Demo-Prototyp. Alle Daten sind fiktiv und liegen nur im Arbeitsspeicher. */
 /* ---------------- Datum & Format ---------------- */
@@ -307,6 +308,7 @@ function Today({ ctx, onSetup }) {
     </section>
 
     <HabitsToday ctx={ctx} />
+    <FoodTip ctx={ctx} />
 
     {BETA.recs && rv.primary && <section className="block" aria-labelledby="rec-h">
       <div className="h2-row"><h2 className="h2" id="rec-h">Empfehlung für dich</h2><button className="link" onClick={() => go('gesundheit', 'fuerdich')}>Alle Empfehlungen</button></div>

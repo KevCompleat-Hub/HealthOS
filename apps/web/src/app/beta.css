@@ -77,3 +77,21 @@
   table.habits th:first-child,table.habits td:first-child{position:sticky;left:0;background:var(--surface);z-index:1;max-width:120px;white-space:normal}
   table.habits button{min-width:40px;min-height:40px}
 }
+.b-food-card b{display:block;font-size:1.0625rem;margin:2px 0 4px}
+.b-food-card p{margin:4px 0}
+.b-food-kicker{font-size:.8125rem;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px!important}
+.b-food-tip{color:var(--muted)}
+.b-overlay{position:fixed;inset:0;z-index:70;background:color-mix(in srgb,var(--ink) 35%,transparent);display:flex;justify-content:center;align-items:flex-end}
+.b-overlay-inner{background:var(--bg);width:100%;max-width:640px;max-height:92dvh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.b-filter{display:flex;gap:8px;overflow-x:auto;padding:8px 0;margin:4px 0}
+.b-filter .chip{white-space:nowrap}
+.b-foods{list-style:none;padding:0;margin:8px 0;display:grid;gap:10px}
+.b-food{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.b-food p{margin:6px 0}
+.b-food-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.b-food-group,.b-food-goals{font-size:.8125rem;color:var(--muted)}
+.b-food-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:6px 0}
+.b-src{font-size:.8125rem;color:var(--primary)}
+.b-principles{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0}
+.b-principles summary{font-weight:600;cursor:pointer}
+.b-principles li{margin:6px 0}

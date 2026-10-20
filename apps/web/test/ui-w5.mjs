@@ -119,6 +119,22 @@ else {
   ok(!!byText('Später fortsetzen'), '„Später fortsetzen“ statt „Schließen“');
   await click(byText('Später fortsetzen')); await wait(200);
 }
+// Ernährung: Idee für heute und Zutaten-Katalog
+await click(tabsBtn(0)); await wait(200);
+ok(/Idee für heute/.test(document.querySelector('main').textContent), 'Heute zeigt eine Ernährungs-Idee');
+await click(byText('Zutaten-Katalog')); await wait(150);
+const dlg = document.querySelector('.b-overlay[role="dialog"]');
+ok(!!dlg && document.querySelectorAll('.b-food').length >= 10, `Katalog „Passend zu mir“ (${document.querySelectorAll('.b-food').length} Zutaten)`);
+ok([...document.querySelectorAll('.b-principles a')].some(a => /dge\.de/.test(a.href)), 'Grundsätze mit Quelle der DGE verlinkt');
+await click([...document.querySelectorAll('.b-filter .chip')].find(b => b.textContent === 'Hülsenfrüchte')); await wait(100);
+const hl = [...document.querySelectorAll('.b-food b')].map(b => b.textContent);
+ok(hl.includes('Linsen') && hl.every(n => /Linsen|Kichererbsen|Bohnen|Erbsen|Hummus/.test(n)), `Filter Hülsenfrüchte (${hl.join(', ')})`);
+await click([...document.querySelectorAll('.b-filter .chip')].find(b => b.textContent === 'Alle')); await wait(100);
+ok(document.querySelectorAll('.b-food').length >= 30, `Gesamter Katalog (${document.querySelectorAll('.b-food').length} Zutaten)`);
+await click([...document.querySelectorAll('.b-food')].find(li => /^Linsen/.test(li.querySelector('b').textContent)).querySelector('button')); await wait(1100);
+ok(((await docsNow()).habits.habits || []).some(h => h.name === 'Ein Gericht mit Hülsenfrüchten' && h.perWeek === 1), 'Gewohnheit aus dem Katalog mit Häufigkeit 1× pro Woche gespeichert');
+await click(byText('Schließen')); await wait(100);
+ok(!document.querySelector('.b-overlay'), 'Katalog schließt');
 // Entwicklung ohne Kalorien
 await click(tabsBtn(3)); await wait(200);
 ok(!/Kalorien/.test(document.querySelector('main').textContent), 'Entwicklung ohne Kalorienverlauf');
