@@ -15,8 +15,6 @@ type Phase =
   | { k: 'laden' }
   | { k: 'anmelden'; err?: string; info?: string }
   | { k: 'passwort'; err?: string }
-  | { k: 'faktor-einrichten'; factorId: string; qr: string; secret: string; err?: string }
-  | { k: 'faktor-pruefen'; factorId: string; err?: string }
   | { k: 'einwilligung'; user: User; err?: string }
   | { k: 'bereit'; user: User }
   | { k: 'fehler'; msg: string };
@@ -40,17 +38,6 @@ function BetaGate() {
     if (!user) return setPhase({ k: 'anmelden' });
     // Einladung oder Passwort-Zurücksetzen: zuerst ein eigenes Passwort festlegen
     if (linkType === 'invite' || linkType === 'recovery') return setPhase({ k: 'passwort' });
-    const aal = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aal.error) return setPhase({ k: 'fehler', msg: aal.error.message });
-    if (aal.data.currentLevel !== 'aal2') {
-      const f = await sb.auth.mfa.listFactors();
-      const totp = f.data?.totp?.find(x => x.status === 'verified');
-      if (totp) return setPhase({ k: 'faktor-pruefen', factorId: totp.id });
-      for (const old of f.data?.all?.filter(x => x.status === 'unverified') || []) await sb.auth.mfa.unenroll({ factorId: old.id });
-      const e = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'HealthOS' });
-      if (e.error) return setPhase({ k: 'fehler', msg: e.error.message });
-      return setPhase({ k: 'faktor-einrichten', factorId: e.data.id, qr: e.data.totp.qr_code, secret: e.data.totp.secret });
-    }
     const c = await sb.from('beta_consents').select('version').eq('version', CONSENT_VERSION).maybeSingle();
     if (c.error) return setPhase({ k: 'fehler', msg: c.error.message });
     if (!c.data) return setPhase({ k: 'einwilligung', user });
@@ -68,11 +55,6 @@ function BetaGate() {
   const signIn = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const f = new FormData(e.currentTarget); run(async sb => {
     const r = await sb.auth.signInWithPassword({ email: String(f.get('email')), password: String(f.get('password')) });
     if (r.error) return setPhase({ k: 'anmelden', err: 'Anmeldung nicht möglich. Prüfe E-Mail und Passwort.' });
-    await next(sb);
-  }); };
-  const verify = (factorId: string, base: Phase) => (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const code = String(new FormData(e.currentTarget).get('code')).replace(/\s/g, ''); run(async sb => {
-    const r = await sb.auth.mfa.challengeAndVerify({ factorId, code });
-    if (r.error) return setPhase({ ...base, err: 'Der Code stimmt nicht oder ist abgelaufen.' } as Phase);
     await next(sb);
   }); };
   const consent = (e: FormEvent<HTMLFormElement>, user: User) => { e.preventDefault(); run(async sb => {
@@ -111,28 +93,11 @@ function BetaGate() {
     </form>}
     {phase.k === 'passwort' && <form onSubmit={setPassword}>
       <h1>Passwort festlegen</h1>
-      <p>Mindestens 12 Zeichen. Danach richtest du den zweiten Faktor ein.</p>
+      <p>Mindestens 12 Zeichen. Bitte ein Passwort verwenden, das du nirgends sonst nutzt.</p>
       <label htmlFor="pw">Neues Passwort</label><input id="pw" name="pw" type="password" autoComplete="new-password" minLength={12} required />
       <label htmlFor="pw2">Wiederholen</label><input id="pw2" name="pw2" type="password" autoComplete="new-password" minLength={12} required />
       {phase.err && <p className="gate-err" role="alert">{phase.err}</p>}
       <button className="gate-btn" disabled={busy}>Speichern</button>
-    </form>}
-    {phase.k === 'faktor-einrichten' && <form onSubmit={verify(phase.factorId, phase)}>
-      <h1>Zweiten Faktor einrichten</h1>
-      <p>HealthOS verlangt vor dem ersten Speichern einen zweiten Faktor. Scanne den Code mit einer Authenticator-App und gib den sechsstelligen Code ein.</p>
-      <img className="qr" src={phase.qr} alt="QR-Code für die Authenticator-App" />
-      <p>Oder Schlüssel manuell eingeben:</p><p className="secret">{phase.secret}</p>
-      <label htmlFor="code">Code aus der App</label><input id="code" name="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" required />
-      {phase.err && <p className="gate-err" role="alert">{phase.err}</p>}
-      <button className="gate-btn" disabled={busy}>Bestätigen</button>
-    </form>}
-    {phase.k === 'faktor-pruefen' && <form onSubmit={verify(phase.factorId, phase)}>
-      <h1>Bestätigen</h1>
-      <p>Gib den Code aus deiner Authenticator-App ein.</p>
-      <label htmlFor="code">Code</label><input id="code" name="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" required />
-      {phase.err && <p className="gate-err" role="alert">{phase.err}</p>}
-      <button className="gate-btn" disabled={busy}>Bestätigen</button>
-      <button type="button" className="gate-link" onClick={signOut}>Abmelden</button>
     </form>}
     {phase.k === 'einwilligung' && <form onSubmit={e => consent(e, phase.user)}>
       <h1>Bevor es losgeht</h1>
