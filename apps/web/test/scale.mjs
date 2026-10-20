@@ -1,0 +1,28 @@
+// Tests der Screenshot-Auswertung ohne Netz: Prüfung der Modellantwort und Aufruf der Claude-API mit Attrappe.
+import { buildSync } from 'esbuild';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here = path.dirname(fileURLToPath(import.meta.url));
+const out = path.join(here, '../.test/scale.cjs');
+buildSync({ entryPoints: [path.join(here, '../src/server/scale.ts')], bundle: true, platform: 'node', format: 'cjs', outfile: out, logLevel: 'error' });
+const S = createRequire(import.meta.url)(out);
+let n = 0, f = 0; const ok = (c, m) => { n++; if (!c) f++; console.log(`${c ? 'ok  ' : 'FEHL'} ${m}`); };
+const T = '2026-10-21';
+ok(JSON.stringify(S.parseScaleJson('{"kg": 84.6, "fat_pct": 22.1, "muscle_kg": 35.2, "water_pct": 55, "date": "2026-10-21"}', T)) === JSON.stringify({ kg: 84.6, fat: 22.1, muscle: 35.2, water: 55, date: '2026-10-21' }), 'gültige Antwort wird übernommen');
+ok(S.parseScaleJson('```json\n{"kg":"84,6","fat_pct":null}\n```', T).kg === 84.6, 'Antwort in Codeblock und mit Komma');
+const odd = S.parseScaleJson('{"kg": 186.5, "fat_pct": 95, "muscle_kg": 3, "water_pct": "abc", "date": "2027-01-01"}', T);
+ok(odd.kg === 186.5 && odd.fat === null && odd.muscle === null && odd.water === null && odd.date === null, 'unplausible Werte und Datum in der Zukunft werden null');
+ok(S.parseScaleJson('Kein JSON hier', T) === null && S.parseScaleJson('{kaputt', T) === null, 'keine oder kaputte Antwort ergibt null');
+ok(S.parseScaleJson('{"kg": 400}', T).kg === null, 'Gewicht über 300 kg wird verworfen');
+let sent = null;
+const fakeFetch = async (url, init) => { sent = { url, init: JSON.parse(init.body), headers: init.headers }; return { ok: true, json: async () => ({ content: [{ type: 'text', text: '{"kg": 83.9, "fat_pct": 21.4, "muscle_kg": null, "water_pct": null, "date": null}' }] }) }; };
+const v = await S.analyzeScale({ image: 'QUJD', mediaType: 'image/jpeg' }, { apiKey: 'test', model: 'claude-haiku-5-5', fetchImpl: fakeFetch, today: T });
+ok(v.kg === 83.9 && v.fat === 21.4, 'Auswertung liefert die Werte');
+ok(sent.url === 'https://api.anthropic.com/v1/messages' && sent.headers['x-api-key'] === 'test' && sent.init.messages[0].content[0].source.media_type === 'image/jpeg' && sent.init.max_tokens === 300, 'Anfrage an die Claude-API korrekt aufgebaut');
+const fails = async p => { try { await p; return false; } catch { return true; } };
+ok(await fails(S.analyzeScale({ image: 'QUJD', mediaType: 'image/gif' }, { apiKey: 't', model: 'm', fetchImpl: fakeFetch, today: T })), 'nur JPEG, PNG, WebP');
+ok(await fails(S.analyzeScale({ image: 'x'.repeat(S.MAX_B64 + 1), mediaType: 'image/png' }, { apiKey: 't', model: 'm', fetchImpl: fakeFetch, today: T })), 'zu große Bilder werden abgelehnt');
+ok(await fails(S.analyzeScale({ image: 'QUJD', mediaType: 'image/png' }, { apiKey: 't', model: 'm', fetchImpl: async () => ({ ok: false, status: 401 }), today: T })), 'Fehler des KI-Dienstes wird gemeldet');
+console.log(`\n${n - f} von ${n} Tests der Screenshot-Auswertung bestanden`);
+process.exit(f ? 1 : 0);

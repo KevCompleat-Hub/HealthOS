@@ -68,7 +68,7 @@ patch('Termine auf Heute Ende', '        : <Empty text="In den nächsten drei Wo
 // Entwicklung: Gewichtsverlauf
 patch('Gewichtsverlauf', '<section className="block tight">\n      <div className="h2-row"><h3 className="h3 top0">Gewicht</h3>', '{BETA.weight && <section className="block tight">\n      <div className="h2-row"><h3 className="h3 top0">Gewicht</h3>');
 patch('Gewichtsverlauf Ende', "action={<button className=\"btn small\" onClick={() => ctx.go('erfassen', 'gewicht')}>Ersten Wert erfassen</button>} />}\n      </div>\n    </section>", "action={<button className=\"btn small\" onClick={() => ctx.go('erfassen', 'gewicht')}>Ersten Wert erfassen</button>} />}\n      </div>\n    </section>}");
-patch('Zielhinweis Gewicht', '<p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>', '{BETA.weight && <p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>}');
+patch('Zielhinweis Gewicht', '<p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>', '{BETA.weight && <p className="hint">{BETA.capture.includes(\'mahlzeit\') ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. HealthOS legt keine Zielwerte automatisch fest."}</p>}');
 // Einrichtung: keine Gewichts- oder Kalorienerfassung, kein Blutwerte-Ziel
 patch('Kalorien-Schalter', '<Toggle checked={n.calories} onChange={v =>', '{BETA.capture.includes(\'mahlzeit\') && <Toggle checked={n.calories} onChange={v =>');
 patch('Kalorien-Schalter Ende', '>Kalorien und Makros erfassen</Toggle>', '>Kalorien und Makros erfassen</Toggle>}');
@@ -130,6 +130,19 @@ patch('Einstellungen: kein Kaloriensatz', 'Eigene Gewohnheiten legst du in der W
 patch('Künftige Termine nicht abhakbar', 'onClick={() => run(x => A.toggleItem(x, it.id, today)', "disabled={it.date > today && st !== 'erledigt'} title={it.date > today ? 'Erst am Tag selbst abhakbar' : undefined} onClick={() => run(x => A.toggleItem(x, it.id, today)");
 patch('Info: Impressum, Datenschutz, Feedback', 'BETA.info.missing}</p>', "BETA.info.missing}</p>\n      {!BETA.demoData && <p className=\"legal-links\"><a href=\"/impressum\">Impressum</a><a href=\"/datenschutz\">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>}");
 patch('Einstellungen: Rechtliches und Feedback im Konto', '<div className="btn-row"><button className="btn small" onClick={ctx.account.signOut}>Abmelden</button></div>', "<div className=\"btn-row\"><button className=\"btn small\" onClick={ctx.account.signOut}>Abmelden</button></div>\n        <p className=\"legal-links\"><a href=\"/impressum\">Impressum</a><a href=\"/datenschutz\">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>");
+// ---------- W6: Gewicht und Körperwerte, Waagen-Screenshot, Training in der Woche verrechnen, kleinere Korrekturen ----------
+patch('Körperwerte speichern', '...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}) };', '...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}), ...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}) };');
+patch('Speicher-Abhängigkeit Körperwerte', 'data.workouts, data.steps, theme, store.status]);', 'data.workouts, data.steps, data.weights, theme, store.status]);');
+patch('Dokumentzuordnung Körperwerte', "k === 'activity' ? r.activity :", "k === 'activity' ? r.activity : k === 'koerper' ? r.koerper :");
+patch('Körperwerte laden', '...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}) };', '...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}), ...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}) };');
+patch('Check-in: Gewicht eintragen', "{k === 'woche' && <WeekSummary m={wm} />}", "{k === 'woche' && <><WeekSummary m={wm} />{BETA.weight && <WeightQuick ctx={ctx} />}</>}");
+patch('Check-in kurz: Gewicht eintragen', "{k === 'wochekomplett' && <><WeekSummary m={wm} /><PosNeg m={wm} /></>}", "{k === 'wochekomplett' && <><WeekSummary m={wm} /><PosNeg m={wm} />{BETA.weight && <WeightQuick ctx={ctx} />}</>}");
+patch('Erfassen: Waagen-Screenshot', "{BETA.capture.includes('gewicht') && seg === 'gewicht' && <WeightForm ctx={ctx} />}", "{BETA.capture.includes('gewicht') && seg === 'gewicht' && <><WeightForm ctx={ctx} /><ScaleImport ctx={ctx} /></>}");
+patch('Training: geplante Einheit der Woche verrechnen', "  const planned = data.items.filter(i => i.type === 'training' && i.date === date && ['geplant', 'verpasst'].includes(i.status) && !i.replacedBy).sort(byTime)[0];", "  const openT = i => i.type === 'training' && ['geplant', 'verpasst'].includes(i.status) && !i.replacedBy;\n  const planned = data.items.filter(i => openT(i) && i.date === date).sort(byTime)[0] || data.items.filter(i => openT(i) && i.date >= weekStart(date) && i.date <= addDays(weekStart(date), 6)).sort(byTime)[0];");
+patch('Training: zuletzt genutzte Art vorauswählen', "const [kind, setKind] = useState('Krafttraining');", "const [kind, setKind] = useState(() => (data.workouts.filter(w => w.source === 'manuell').slice(-1)[0] || {}).kind || 'Krafttraining');");
+patch('Woche: Check-in zählt nicht als Tagesaufgabe', "const its = data.items.filter(i => i.date === d && i.status !== 'verschoben');", "const its = data.items.filter(i => i.date === d && i.status !== 'verschoben' && i.routine !== 'review');");
+patch('Diagramm: ganzzahlige Skala bei kleinen Werten', '{[0, max / 2].map((t, i) =>', '{(max <= 6 ? Array.from({ length: Math.floor(max) + 1 }, (_, k) => k) : [0, max / 2]).map((t, i) =>');
+patch('Diagramm: erreichtes Wochenziel voll eingefärbt', 'const weeks = trainingSeries(data, weekStart(today), 8, today);', 'const weeks = trainingSeries(data, weekStart(today), 8, today).map(x => (x.goal && x.value != null && x.value >= x.goal ? { ...x, faint: false } : x));');
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -148,6 +161,7 @@ import { Store } from '../storage/store';
 import { emptyState, browserDownloads } from './support';
 import { TodayProgress, HabitsToday, Celebrate, habitsOn } from '../beta/today';
 import { usableOffer, fixText } from '../beta/review';
+import { ScaleImport, WeightQuick } from '../beta/scale';
 const { ${[...used].sort().join(', ')} } = D;
 `;
 writeFileSync(path.join(root, 'apps/web/src/legacy/HealthOSApp.jsx'), header + ui + '\nexport { App, Onboarding, Settings, ReviewFlow };\n');

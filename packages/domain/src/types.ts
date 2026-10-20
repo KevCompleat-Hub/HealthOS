@@ -115,7 +115,7 @@ export interface Pause { id: string; kind: PauseKind; from: ISODate; to: ISODate
 /** Pause einschließlich der aus pausierten Routinen abgeleiteten Pausen */
 export interface EffectivePause { id: string; from: ISODate; to: ISODate; scope: PauseScope | 'routine'; routineId?: string; kind?: PauseKind }
 
-export interface Habit { id: string; name: string; lib?: string; active?: boolean; pinned?: boolean; custom?: boolean; inactiveFrom?: ISODate }
+export interface Habit { id: string; name: string; lib?: string; active?: boolean; pinned?: boolean; custom?: boolean; inactiveFrom?: ISODate; /** Ziel pro Woche (1 bis 6). Ohne Angabe täglich. */ perWeek?: number }
 export type HabitLog = Record<string, HabitMark>;
 
 /* ---------- Erfassen (in der Referenz nur fiktive Demo-Daten) ---------- */

@@ -44,7 +44,7 @@ let dbstand = null;
 if (mode === 'beta-db') {
   dbstand = await import('./dbstand.mjs'); await dbstand.start();
   const C = '33333333-3333-3333-3333-333333333333'; const sb = dbstand.client(C);
-  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-1' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
+  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-2' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
   backend = M.supabaseBackend(sb, C);
   if (process.env.DEBUG) { const put0 = backend.put; backend.put = async (k, b) => { const t0 = Date.now(); try { await put0(k, b); console.log('  put ok', k, Date.now() - t0, 'ms'); } catch (e) { console.log('  put FEHLER', k, e.message); throw e; } }; }
   process.on('exit', () => dbstand.stop());
@@ -66,7 +66,7 @@ console.log(`# Modus ${mode}`);
 await mount();
 ok(!!document.querySelector('.ob, [class*="onboard"]') || /Was möchtest du erreichen/.test(text()), 'Einrichtung startet beim ersten Öffnen');
 ok(!/Blutwerte verbessern|Blutwerte/.test([...document.querySelectorAll('.chip, button')].map(b => b.textContent).join('|')), 'Ziel „Blutwerte“ in der Beta nicht wählbar');
-for (let i = 0; i < 12; i++) { const w = byText('Weiter'); if (!w) break; await click(w); if (/Ernährung und Tracking/.test(text())) ok(!/Gewicht tracken|Kalorien und Makros/.test(text()), 'Einrichtung fragt weder Gewicht noch Kalorien ab'); }
+for (let i = 0; i < 12; i++) { const w = byText('Weiter'); if (!w) break; await click(w); if (/Ernährung und Tracking/.test(text())) ok(!/Kalorien und Makros/.test(text()) && /Gewicht tracken/.test(text()), 'Einrichtung fragt Gewicht, aber keine Kalorien ab'); }
 const finish = byText('Plan übernehmen');
 ok(!!finish, `Abschluss der Einrichtung vorhanden (${finish && finish.textContent.trim()})`);
 await click(finish); await wait(1200);
@@ -74,9 +74,9 @@ ok(/Als Nächstes/.test(text()), 'Heute-Ansicht nach der Einrichtung');
 const tabs = [...document.querySelectorAll('.tabbar button')].map(b => b.textContent);
 ok(tabs.length === 4 && !tabs.includes('Gesundheit'), `Navigation ohne Gesundheit (${tabs.join(', ')})`);
 ok(!/Empfehlung für dich|Nächste Termine/.test(text()), 'Heute ohne Empfehlungen und Arzttermine');
-ok(![...document.querySelectorAll('.stat')].some(s => /Gewicht/.test(s.textContent)), 'Heute ohne Gewicht');
+ok([...document.querySelectorAll('.stat')].some(s => /Gewicht/.test(s.textContent)), 'Heute zeigt die Gewicht-Kachel');
 const quick = [...document.querySelectorAll('.quick-btn')].map(b => b.textContent);
-ok(quick.join() === 'Schritte,Training', `Schnell erfassen nur Training und Schritte (${quick.join(', ')})`);
+ok(quick.join() === 'Gewicht,Schritte,Training', `Schnell erfassen: Gewicht, Schritte, Training (${quick.join(', ')})`);
 if (mode !== 'demo') ok(!/fiktiv/i.test(text()) && /Geschlossene Beta/.test(text()), 'Beta zeigt keine Demo-Daten');
 if (mode === 'demo') ok(/Demo, fiktive Daten/.test(text()), 'Demo ist als fiktiv gekennzeichnet');
 const keys = Object.keys(await docsNow());
@@ -86,13 +86,22 @@ ok(['settings', 'plan', 'habits', 'activity'].every(k => keys.includes(k)) && ke
 // Training erfassen und dauerhaft speichern
 await click(byText(/Erfassen$/) || [...document.querySelectorAll('.tabbar button')][2]);
 const segs = [...document.querySelectorAll('.seg button, [role="radio"], [role="tab"]')].map(b => b.textContent.trim());
-ok(!/Gewicht speichern/.test(text()) && !segs.includes('Gewicht') && !segs.includes('Mahlzeit'), `Erfassen ohne Gewicht und Mahlzeiten (${segs.join(', ')})`);
+ok(segs.includes('Gewicht') && !segs.includes('Mahlzeit'), `Erfassen mit Gewicht, ohne Mahlzeiten (${segs.join(', ')})`);
 const dur = [...document.querySelectorAll('input')].find(i => (i.getAttribute('aria-label') || '').includes('Dauer') || (i.id && document.querySelector(`label[for="${i.id}"]`)?.textContent.includes('Dauer')));
 if (dur) await setVal(dur, '35');
 await click(byText('Training speichern')); await wait(1200);
 const act1 = (await docsNow()).activity;
 ok(act1 && act1.workouts.some(w => w.source === 'manuell'), `Trainingseinheit gespeichert (${act1 ? act1.workouts.length : 0} Einheiten)`);
 
+// Gewicht erfassen und im Dokument „koerper“ speichern
+await click([...document.querySelectorAll('.seg button, [role="radio"], [role="tab"]')].find(b => b.textContent.trim() === 'Gewicht'));
+const kgLabel = [...document.querySelectorAll('label')].find(l => /Gewicht in kg/.test(l.textContent));
+const kgIn = kgLabel && (kgLabel.querySelector('input') || (kgLabel.htmlFor && document.getElementById(kgLabel.htmlFor)));
+ok(!!kgIn, 'Eingabefeld für Gewicht vorhanden');
+if (kgIn) await setVal(kgIn, '84,6');
+await click(byText('Gewicht speichern')); await wait(1200);
+const kd = (await docsNow()).koerper;
+ok(kd && kd.weights.some(w => w.kg === 84.6), `Gewicht gespeichert (${kd ? kd.weights.length : 0} Werte)`);
 // Abhaken einer heutigen Aufgabe
 await click([...document.querySelectorAll('.tabbar button')][0]);
 const check = document.querySelector('.check, .tick, button[aria-pressed="false"]');
@@ -106,12 +115,12 @@ ok(/Als Nächstes/.test(text()) && !/Was möchtest du erreichen/.test(text()), '
 await click([...document.querySelectorAll('.tabbar button')][2]);
 ok(/35 Min|Laufen|Krafttraining|Training/.test(text()), 'Erfasste Einheit nach dem Neuladen sichtbar');
 const docs = JSON.stringify(await docsNow());
-const bad = (docs.match(/.{0,80}"(weights|labs|meals|appointments|kg)".{0,40}/g) || []); ok(!bad.length, `Keine Gewichts-, Labor-, Mahlzeit- oder Termindaten im Speicher ${bad.slice(0, 3).join(' / ')}`);
+const all = await docsNow(); const bad = Object.entries(all).filter(([k, b]) => ['labs', 'meals', 'appointments'].some(x => x in b) || (k !== 'koerper' && 'weights' in b)).map(([k]) => k); ok(!bad.length, `Keine Labor-, Mahlzeit- oder Termindaten, Gewicht nur in „koerper“ ${bad.join(', ')}`);
 
 // Einstellungen: Konto, Speicher, Löschen
 await click(document.querySelector('button[aria-label="Einstellungen"]'));
 if (mode !== 'demo') { ok(/Angemeldet als tester@example.org/.test(text()), 'Einstellungen zeigen das Konto'); await click(byText('Abmelden')); ok(signedOut, 'Abmelden wird ausgelöst'); }
-ok(/Training und Schritte/.test(text()), 'Speicherhinweis nennt Training und Schritte');
+ok(/Training, Schritte/.test(text()) && /Gewicht/.test(text()), 'Speicherhinweis nennt Training, Schritte und Gewicht');
 await click(byText('Gespeicherte Daten löschen')); await click(byText('Endgültig löschen')); await wait(500); console.log('  nach 0,5 s übrig:', Object.keys(await docsNow()).length, '| Meldung:', (document.querySelector('.toast') || {}).textContent, '| Fehler:', (document.querySelector('.err') || {}).textContent); await wait(2500);
 const left = Object.keys(await docsNow()).length;
 ok(left === 0, `Löschen entfernt alle gespeicherten Dokumente (${left} übrig)`);

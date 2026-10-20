@@ -3,7 +3,7 @@ import { normalizeConfig } from '../config.js';
 import { classOfItem } from '../plan/build.js';
 import { pausedAll } from '../plan/materialize.js';
 import { versionAt } from '../plan/routines.js';
-import { dayNutrition, habitOn, trainingsInWeek } from '../status.js';
+import { dayNutrition, habitOn, trainingsInWeek, weeklyHabitCounts, weeklyTarget } from '../status.js';
 import type { GoalKey, ISODate, Item, State, Weight } from '../types.js';
 import { addDays, avg, daysBetween, fmtNum, monthLast, pct, signed, WD_LONG, wdIdx, weekDays, weekStart } from '../util/date.js';
 import { avgComplete, gapText, goalAt, habitStart, planStart, trainingSeries, weekCoverage } from './coverage.js';
@@ -22,6 +22,7 @@ export interface HabitRate { id: string; name: string; lib?: string; custom?: bo
 export function habitAdherence(data: Pick<State, 'habits' | 'habitLog' | 'pauses'>, from: ISODate, to: ISODate, today: ISODate): { per: HabitRate[]; done: number; eligible: number; rate: number | null } {
   const hs0 = habitStart(data);
   const per = data.habits.filter(h => h.active !== false || h.inactiveFrom).map(h => {
+    if (weeklyTarget(h)) { const c = hs0 ? weeklyHabitCounts(data, h, from, to, today, hs0) : { done: 0, eligible: 0 }; return { id: h.id, name: h.name, lib: h.lib, custom: h.custom, done: c.done, eligible: c.eligible, rate: c.eligible ? c.done / c.eligible : null }; }
     let done = 0, eligible = 0;
     for (let d = from; d <= to && d <= today; d = addDays(d, 1)) {
       if (!hs0 || d < hs0 || pausedAll(data, d) || !habitOn(h, d)) continue;

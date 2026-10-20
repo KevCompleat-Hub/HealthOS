@@ -44,7 +44,7 @@ let dbstand = null;
 if (mode === 'beta-db') {
   dbstand = await import('./dbstand.mjs'); await dbstand.start();
   const C = '33333333-3333-3333-3333-333333333333'; const sb = dbstand.client(C);
-  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-1' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
+  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-2' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
   backend = M.supabaseBackend(sb, C);
   if (process.env.DEBUG) { const put0 = backend.put; backend.put = async (k, b) => { const t0 = Date.now(); try { await put0(k, b); console.log('  put ok', k, Date.now() - t0, 'ms'); } catch (e) { console.log('  put FEHLER', k, e.message); throw e; } }; }
   process.on('exit', () => dbstand.stop());
@@ -67,7 +67,7 @@ console.log(`# W5, Modus ${mode}`);
 const tabsBtn = i => [...document.querySelectorAll('.tabbar button')][i];
 await mount();
 {
-  if (mode !== 'demo') ok(![...document.querySelectorAll('.chip, button')].some(b => /^Abnehmen$/.test(b.textContent.trim())), 'Ziel „Abnehmen“ in der Beta nicht wählbar');
+  if (mode !== 'demo') ok([...document.querySelectorAll('.chip, button')].some(b => /^Abnehmen$/.test(b.textContent.trim())), 'Ziel „Abnehmen“ wieder wählbar');
   for (let i = 0; i < 12; i++) { const w = byText('Weiter'); if (!w) break; await click(w); }
   await click(byText('Plan übernehmen')); await wait(1200);
 }
@@ -113,7 +113,7 @@ else {
   for (let s = 0; s < 8; s++) { seen += document.querySelector('.review') ? document.querySelector('.review').textContent : ''; const opt = document.querySelector('.review .chip, .review [role="radio"]'); if (opt && /umfang|Umfang/.test(seen)) { /* Antworten optional */ } const w = byText('Weiter'); if (!w) break; await click(w); await wait(150); }
   const stepsSeen = [...new Set((seen.match(/Schritt \d von \d/g) || []))];
   ok(stepsSeen.length >= 4 && /Alles so fortführen|Alles andere so fortführen|anpassen|verlegen|pausieren/.test(seen), `Check-in bis zu den Maßnahmen durchlaufen (${stepsSeen.join(', ')})`);
-  ok(!/Gewicht/.test(seen) && !/Mahlzeiten/.test(seen), 'Check-in zeigt weder Gewicht noch Mahlzeiten');
+  ok(/Gewicht/.test(seen) && !/Mahlzeiten/.test(seen), 'Check-in fragt Gewicht ab und zeigt keine Mahlzeiten');
   ok(!/Ernährungsänderung/.test(seen), 'Check-in fragt nicht nach Ernährung');
   ok(!/Haferflocken|Hülsenfrüchten|Health Intelligence/.test(seen), 'Check-in schlägt keine Empfehlungs-Maßnahmen vor');
   ok(!!byText('Später fortsetzen'), '„Später fortsetzen“ statt „Schließen“');

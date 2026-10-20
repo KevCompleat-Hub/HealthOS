@@ -12,6 +12,16 @@ insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1
 insert into r select 'mit Faktor und Einwilligung gespeichert', count(*) = 1 from app_documents;
 insert into r select 'Gewicht wird abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'activity', '{"weights":[]}')$$);
 insert into r select 'unbekannter Dokumentschlüssel wird abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'labs', '{}')$$);
+insert into r select 'Körperwerte ohne Einwilligung beta-2 abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'koerper', '{"weights":[]}')$$);
+insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'beta-2');
+insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'koerper', '{"weights":[{"kg":84.6}]}');
+insert into r select 'Körperwerte mit Einwilligung beta-2 gespeichert', count(*) = 1 from app_documents where doc_key = 'koerper';
+insert into r select 'Gewicht außerhalb von „koerper“ weiter abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'plan', '{"weights":[]}')$$);
+insert into r select 'Blutwerte auch in „koerper“ abgewiesen', pg_temp.fails($$update app_documents set body = '{"labs":[]}' where doc_key = 'koerper'$$);
+insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'ki-1');
+insert into r select 'Einwilligung KI-Auswertung speicherbar', count(*) = 1 from beta_consents where version = 'ki-1';
+insert into r select 'unbekannte Einwilligungsart abgewiesen', pg_temp.fails($$insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'werbung-1')$$);
+delete from app_documents where doc_key = 'koerper';
 insert into r select 'Export enthält die eigenen Dokumente', jsonb_array_length(public.export_my_beta_data() -> 'documents') = 1;
 select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","aal":"aal1","role":"authenticated"}', false);
 insert into r select 'Anmeldung mit E-Mail und Passwort (aal1) sieht eigene Daten', count(*) = 1 from app_documents;

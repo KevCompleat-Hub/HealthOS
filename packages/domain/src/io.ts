@@ -27,7 +27,7 @@ export function buildExport(cfg: unknown, data: Pick<State, 'routines' | 'items'
       routine_versions: rts.flatMap(r => r.versions.map(v => ({ routine_id: r.id, valid_from: v.validFrom, title: v.title, kind: v.kind || null, weekdays: v.days, interval_weeks: v.interval || 1, time_local: v.time, duration_min: v.duration, note: v.note || null }))),
       routine_exceptions: rts.flatMap(r => (r.exceptions || []).map(e => ({ id: e.id, routine_id: r.id, weekday: e.weekday, valid_from: e.validFrom, time_local: e.time || null, duration_min: e.duration || null }))),
       agenda_items: data.items.filter(i => !i.sessionOnly).map(i => ({ id: i.id, routine_id: i.routine || null, title: i.title, category: i.type, kind: i.kind || null, task_class: classOfItem(i), priority: i.priority || 'normal', planned_date: i.date, planned_time: i.time || null, duration_min: i.duration || null, status: i.status, moved_from: i.movedFrom || null, moved_to: i.movedTo || null, replaces: i.replaces || null, override: !!i.override, pause_id: i.pauseId || null, note: i.note || null })),
-      habits: data.habits.map(h => ({ id: h.id, name: h.name, library_key: h.lib || null, active: h.active !== false, pinned: !!h.pinned })),
+      habits: data.habits.map(h => ({ id: h.id, name: h.name, library_key: h.lib || null, active: h.active !== false, pinned: !!h.pinned, ...(h.perWeek ? { per_week: h.perWeek } : {}) })),
       habit_events: Object.entries(data.habitLog).map(([k, v]) => { const [hid, date] = k.split('|'); return { habit_id: hid, date, status: v }; }),
       schedule_exceptions: (data.pauses || []).map(p => ({ id: p.id, kind: p.kind, from_date: p.from, to_date: p.to, scope: p.scope })),
       review_sessions: Object.entries(persistableReviews(data.reviews)).map(([k, r]) => ({ key: k, kind: r.kind, status: r.status, completed_at: r.at, snoozed_until: r.snoozedUntil, question_ids: r.questionIds, demo: r.demo })),
@@ -72,7 +72,7 @@ export function parseImport(obj: unknown): { error: string } | { state: Imported
       it.taskClass = classOfItem(it as Item);
       return it as Item;
     });
-    const habits: Habit[] = ((t.habits || []) as Loose[]).map(h => ({ id: String(h.id), name: String(h.name || 'Gewohnheit').slice(0, 60), lib: HABIT_LIBRARY[h.library_key] ? h.library_key : undefined, active: h.active !== false, pinned: !!h.pinned, custom: !h.library_key }));
+    const habits: Habit[] = ((t.habits || []) as Loose[]).map(h => ({ id: String(h.id), name: String(h.name || 'Gewohnheit').slice(0, 60), lib: HABIT_LIBRARY[h.library_key] ? h.library_key : undefined, active: h.active !== false, pinned: !!h.pinned, custom: !h.library_key, perWeek: Number.isInteger(h.per_week) && h.per_week >= 1 && h.per_week <= 6 ? h.per_week : undefined }));
     const habitLog: HabitLog = {}; ((t.habit_events || []) as Loose[]).forEach(e => { if (e && isDate(e.date) && (e.status === 'done' || e.status === 'skip')) habitLog[`${e.habit_id}|${e.date}`] = e.status; });
     const pauses = ((t.schedule_exceptions || []) as Loose[]).filter(p => isDate(p.from_date) && isDate(p.to_date)).map(p => migratePause({ id: p.id, kind: p.kind, reason: p.reason, from: p.from_date, to: p.to_date, scope: p.scope }));
     const reviews: Reviews = {};

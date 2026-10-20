@@ -7,9 +7,10 @@ import { configureBackend } from '../storage/store';
 import { browserBackend, supabaseBackend } from '../storage/backends';
 import { supabase } from '../lib/supabase';
 
-export const CONSENT_VERSION = 'beta-1';
+// beta-2: Gewicht und Körperwerte hinzugekommen (Entscheidung E-11). Wer nur beta-1 erteilt hat, wird erneut gefragt.
+export const CONSENT_VERSION = 'beta-2';
 // Die Oberfläche ist generiertes JavaScript aus der Referenz, ihre Eigenschaften werden hier typisiert.
-const App = LegacyApp as unknown as React.ComponentType<{ account?: { email?: string; signOut: () => void } }>;
+const App = LegacyApp as unknown as React.ComponentType<{ account?: { email?: string; signOut: () => void; supabase?: SupabaseClient; userId?: string } }>;
 
 type Phase =
   | { k: 'laden' }
@@ -76,7 +77,7 @@ function BetaGate() {
   }); };
   const signOut = () => run(async sb => { await sb.auth.signOut(); configureBackend(null); setPhase({ k: 'anmelden' }); });
 
-  if (phase.k === 'bereit') return <App account={{ email: phase.user.email, signOut }} />;
+  if (phase.k === 'bereit') return <App account={{ email: phase.user.email, signOut, supabase: supabase(), userId: phase.user.id }} />;
   return <main className="gate"><div className="gate-card">
     <span className="brand"><span className="brand-mark" aria-hidden="true" /><span className="brand-text">HealthOS</span></span>
     {phase.k === 'laden' && <p role="status">Wird geladen …</p>}
@@ -102,8 +103,8 @@ function BetaGate() {
     {phase.k === 'einwilligung' && <form onSubmit={e => consent(e, phase.user)}>
       <h1>Bevor es losgeht</h1>
       <p>HealthOS speichert für dein Konto:</p>
-      <ul><li>Ziele, Arbeitszeiten und Einstellungen</li><li>Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund</li><li>erledigte Trainingseinheiten und Schritte</li><li>Reviews mit gewählten Maßnahmen, ohne deine Antworten</li></ul>
-      <p>Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen. Gewicht, Mahlzeiten, Blutwerte, Termine und Dokumente sind in der Beta ausgeschaltet. Du kannst alle gespeicherten Daten jederzeit in den Einstellungen exportieren und löschen.</p>
+      <ul><li>Ziele, Arbeitszeiten und Einstellungen</li><li>Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund</li><li>erledigte Trainingseinheiten und Schritte</li><li>Gewicht und Körperwerte wie Körperfett, wenn du sie einträgst</li><li>Reviews mit gewählten Maßnahmen, ohne deine Antworten</li></ul>
+      <p>Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen. Mahlzeiten, Blutwerte, Termine und Dokumente sind in der Beta ausgeschaltet. Eine KI-Auswertung von Waagen-Screenshots nutzt HealthOS nur nach einer eigenen, zusätzlichen Einwilligung. Du kannst alle gespeicherten Daten jederzeit in den Einstellungen exportieren und löschen.</p>
       <label className="check"><input type="checkbox" required /> <span>Ich willige ein, dass HealthOS diese Angaben für mich speichert und verarbeitet. Die Einwilligung ist freiwillig und jederzeit widerrufbar.</span></label>
       {phase.err && <p className="gate-err" role="alert">{phase.err}</p>}
       <button className="gate-btn" disabled={busy}>Einwilligen und starten</button>

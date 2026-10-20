@@ -1,7 +1,7 @@
 'use client';
 // Motivations-Bausteine für „Heute“ (Beta). Rechnen nur mit Funktionen des M1-Kerns, ändern keine Fachregeln.
 import React, { useEffect, useRef, useState } from 'react';
-import { addDays, classOfItem, goalAt, habitOn, pausedAll, trainingsInWeek, weekCoverage, weekDays, weekStart, WD } from '@healthos/domain';
+import { addDays, classOfItem, goalAt, habitOn, pausedAll, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, WD } from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
 
 const vibrate = p => { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch { /* ohne Vibration */ } };
@@ -10,10 +10,21 @@ const hk = (h, d) => `${h.id}|${d}`;
 /** Gewohnheiten, die an einem Tag gelten (aktiv, nicht pausiert). */
 export function habitsOn(data, d) { return pausedAll(data, d) ? [] : data.habits.filter(h => habitOn(h, d)); }
 
+/** Haken einer Gewohnheit in der Woche von d vor d. */
+const doneBefore = (data, h, d) => { let n = 0; for (let x = weekStart(d); x < d; x = addDays(x, 1)) if (data.habitLog[hk(h, x)] === 'done') n++; return n; };
+/** Zählt eine Gewohnheit an Tag d mit? Tägliche immer (außer ausgelassen), mit Wochenziel nur bis das Ziel erreicht ist. */
+export const habitCountsOn = (data, h, d) => {
+  const v = data.habitLog[hk(h, d)]; const t = weeklyTarget(h);
+  if (!t) return v !== 'skip';
+  return v === 'done' || doneBefore(data, h, d) < t;
+};
+/** Fortschritt einer Gewohnheit mit Wochenziel in der Woche von d (einschließlich d). */
+export const weekProgress = (data, h, d) => { const t = weeklyTarget(h); if (!t) return null; let n = 0; for (let i = 0; i < 7; i++) { const x = addDays(weekStart(d), i); if (x <= d && data.habitLog[hk(h, x)] === 'done') n++; } return { done: n, target: t }; };
+
 /** Zähler eines Tages: Plan-Einträge (ohne optionale Erfassung, ohne Check-in-Termin) plus Gewohnheiten. */
 export function dayCounts(data, d) {
   const items = data.items.filter(i => i.date === d && i.routine !== 'review' && !['verschoben', 'pausiert', 'ausgelassen'].includes(i.status) && classOfItem(i) !== 'optional_logging');
-  const hs = habitsOn(data, d).filter(h => data.habitLog[hk(h, d)] !== 'skip');
+  const hs = habitsOn(data, d).filter(h => habitCountsOn(data, h, d));
   const done = items.filter(i => i.status === 'erledigt').length + hs.filter(h => data.habitLog[hk(h, d)] === 'done').length;
   return { total: items.length + hs.length, done, paused: pausedAll(data, d) };
 }
@@ -93,8 +104,10 @@ export function HabitsToday({ ctx }) {
   const ideaList = BETA.habitIdeas.filter(x => !data.habits.some(h => h.name === x.name && h.active !== false));
   const add = x => commit(d => {
     const ex = d.habits.find(h => h.name === x.name);
-    return { ...d, habits: ex ? d.habits.map(h => (h === ex ? { ...h, active: true, inactiveFrom: undefined } : h)) : [...d.habits, { id: `c-${x.key}`, name: x.name, custom: true, active: true }] };
+    return { ...d, habits: ex ? d.habits.map(h => (h === ex ? { ...h, active: true, inactiveFrom: undefined, perWeek: x.perWeek } : h)) : [...d.habits, { id: `c-${x.key}`, name: x.name, custom: true, active: true, ...(x.perWeek ? { perWeek: x.perWeek } : {}) }] };
   }, `Gewohnheit hinzugefügt: ${x.name}`);
+  const [manage, setManage] = useState(false);
+  const setFreq = (h, v) => commit(d => ({ ...d, habits: d.habits.map(x => { if (x.id !== h.id) return x; const { perWeek, ...rest } = x; return v ? { ...rest, perWeek: v } : rest; }) }), `${h.name}: ${v ? `${v}× pro Woche` : 'täglich'}`);
   return <section className="block" aria-labelledby="hab-h">
     <div className="h2-row"><h2 className="h2" id="hab-h">Gewohnheiten heute</h2>
       <button className="link" onClick={() => go('woche')}>Woche</button></div>
@@ -104,13 +117,17 @@ export function HabitsToday({ ctx }) {
           aria-label={`${h.name}: ${v === 'done' ? 'geschafft, tippen zum Öffnen' : v === 'skip' ? 'bewusst ausgelassen, tippen zum Öffnen' : 'offen, tippen zum Abhaken, lange drücken zum Auslassen'}`}
           onPointerDown={() => down(h)} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={e => e.preventDefault()} onClick={() => click(h)}>
           <span className="b-tick" aria-hidden="true">{v === 'done' ? '✓' : v === 'skip' ? '–' : ''}</span>
-          <span className="b-habit-name">{h.name}</span>
+          <span className="b-habit-name">{h.name}{(() => { const p = weekProgress(data, h, today); return p ? <small className={`b-freq${p.done >= p.target ? ' good' : ''}`}>{p.done >= p.target ? `Wochenziel erreicht (${p.done} von ${p.target})` : `${p.done} von ${p.target} diese Woche`}</small> : null; })()}</span>
         </button></li>; })}
     </ul> : <p className="hint top0">{active.length ? 'Heute ist pausiert.' : 'Noch keine Gewohnheit aktiv. Wähle unten eine, die in deinen Alltag passt.'}</p>}
     {hs.length > 0 && <p className="b-tip">Tippen hakt ab. Lange drücken heißt: heute bewusst ausgelassen, zählt nicht gegen dich.</p>}
-    <button className="link" aria-expanded={ideas} onClick={() => setIdeas(!ideas)}>{ideas ? 'Ideen ausblenden' : 'Ideen für neue Gewohnheiten'}</button>
+    <div className="b-links"><button className="link" aria-expanded={ideas} onClick={() => setIdeas(!ideas)}>{ideas ? 'Ideen ausblenden' : 'Ideen für neue Gewohnheiten'}</button>
+      {active.length > 0 && <button className="link" aria-expanded={manage} onClick={() => setManage(!manage)}>{manage ? 'Fertig' : 'Häufigkeit anpassen'}</button>}</div>
+    {manage && <ul className="b-ideas">{active.map(h => <li key={h.id}><span><b>{h.name}</b></span>
+      <select className="input b-sel" aria-label={`Häufigkeit für ${h.name}`} value={h.perWeek || 7} onChange={e => setFreq(h, Number(e.target.value) === 7 ? null : Number(e.target.value))}>
+        {[7, 6, 5, 4, 3, 2, 1].map(v => <option key={v} value={v}>{v === 7 ? 'täglich' : `${v}× pro Woche`}</option>)}</select></li>)}</ul>}
     {ideas && <ul className="b-ideas">{ideaList.slice(0, 12).map(x => <li key={x.key}>
-      <span><b>{x.name}</b><small>{x.when}</small></span>
+      <span><b>{x.name}</b><small>{x.when}{x.perWeek ? `, ${x.perWeek}× pro Woche` : ', täglich'}</small></span>
       <button className="btn small" onClick={() => add(x)} disabled={active.length >= 8}>Hinzufügen</button></li>)}
       {active.length >= 8 && <li className="hint">Höchstens 8 aktive Gewohnheiten. Weniger ist oft mehr.</li>}
     </ul>}

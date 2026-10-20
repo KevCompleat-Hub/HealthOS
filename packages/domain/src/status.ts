@@ -5,6 +5,7 @@ import { buildPlan, classOfItem } from './plan/build.js';
 import { pausedAll } from './plan/materialize.js';
 import type { EffectiveStatus, Food, Habit, ISODate, Item, Nutrients, State } from './types.js';
 import { addDays, avg, byTime, dayLabelLc, daysBetween, isoWeek, parse, toMin, WD, wdIdx, weekDays, weekStart } from './util/date.js';
+import type { HabitLog } from './types.js';
 
 export const effStatus = (it: Item, today: ISODate): EffectiveStatus => {
   if (it.status === 'geplant' && it.date < today) {
@@ -25,13 +26,40 @@ export function pauseStats(data: Pick<State, 'items'>, anchor: ISODate) {
   return { done: eligible.filter(i => i.status === 'erledigt').length, eligible: eligible.length, skipped: list.length - eligible.length, missed: eligible.filter(i => i.status === 'verpasst').length };
 }
 export const habitOn = (h: Habit, d: ISODate): boolean => h.active !== false && !(h.inactiveFrom && d >= h.inactiveFrom);
+/** Wochenziel einer Gewohnheit (1 bis 6 pro Woche) oder null für täglich. Erweiterung nach M1, ohne Wochenziel unverändert. */
+export const weeklyTarget = (h: Habit): number | null => (Number.isInteger(h.perWeek) && (h.perWeek as number) >= 1 && (h.perWeek as number) <= 6 ? (h.perWeek as number) : null);
+
+/**
+ * Gewohnheit mit Wochenziel im Zeitraum [from, to], höchstens bis heute, je Kalenderwoche gerechnet.
+ * Erwartet wird das Wochenziel anteilig zu den gültigen Tagen der Woche im Zeitraum (gerundet).
+ * Erledigt zählt höchstens bis zum Wochenziel. „Bewusst ausgelassen“ verändert nichts. Tage vor startDay zählen nicht.
+ */
+export function weeklyHabitCounts(data: { habitLog: HabitLog; pauses?: State['pauses'] }, h: Habit, from: ISODate, to: ISODate, today: ISODate, startDay?: ISODate | null): { done: number; eligible: number } {
+  const target = weeklyTarget(h); if (!target) return { done: 0, eligible: 0 };
+  const end = to < today ? to : today; let done = 0, eligible = 0;
+  for (let ws = weekStart(from); ws <= end; ws = addDays(ws, 7)) {
+    let valid = 0, hits = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(ws, i);
+      if (d < from || d > end || (startDay && d < startDay) || pausedAll(data, d) || !habitOn(h, d)) continue;
+      valid++; if (data.habitLog[`${h.id}|${d}`] === 'done') hits++;
+    }
+    if (!valid) continue;
+    const dn = Math.min(hits, target);
+    done += dn; eligible += Math.max(Math.round((target * valid) / 7), dn);
+  }
+  return { done, eligible };
+}
+
 export function habitStats(data: Pick<State, 'habits' | 'habitLog' | 'pauses'>, anchor: ISODate, today: ISODate) {
   let done = 0, eligible = 0, skipped = 0;
-  const hs = data.habits;
+  const hs = data.habits.filter(h => !weeklyTarget(h));
   weekDays(anchor).filter(d => d <= today && !pausedAll(data, d)).forEach(d => hs.filter(h => habitOn(h, d)).forEach(h => {
     const v = data.habitLog[`${h.id}|${d}`];
     if (v === 'skip') skipped++; else { eligible++; if (v === 'done') done++; }
   }));
+  const ws = weekStart(anchor);
+  data.habits.filter(h => weeklyTarget(h)).forEach(h => { const c = weeklyHabitCounts(data, h, ws, addDays(ws, 6), today); done += c.done; eligible += c.eligible; });
   return { done, eligible, skipped };
 }
 export function missesInWeek(data: Pick<State, 'items'>, anchor: ISODate) {

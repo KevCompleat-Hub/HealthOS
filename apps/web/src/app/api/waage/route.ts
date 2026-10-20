@@ -1,0 +1,34 @@
+// POST /api/waage: Waagen-Screenshot auslesen. Nur angemeldet, nur mit Einwilligung „ki-1“, ohne Speicherung, ohne Protokoll.
+import { createClient } from '@supabase/supabase-js';
+import { berlinParts } from '@healthos/domain';
+import { analyzeScale } from '../../../server/scale';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
+
+const hits = new Map<string, number[]>();
+const limited = (id: string) => { const now = Date.now(); const l = (hits.get(id) || []).filter(t => now - t < 3600_000); l.push(now); hits.set(id, l); return l.length > 20; };
+const out = (status: number, body: unknown) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
+
+export async function POST(req: Request) {
+  const apiKey = process.env.ANTHROPIC_API_KEY, url = process.env.NEXT_PUBLIC_SUPABASE_URL, anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!apiKey || !url || !anon) return out(503, { fehler: 'Die Auswertung von Screenshots ist noch nicht eingerichtet.' });
+  const token = (req.headers.get('authorization') || '').replace(/^Bearer /, '');
+  if (!token) return out(401, { fehler: 'Bitte anmelden.' });
+  const sb = createClient(url, anon, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+  const { data: { user } } = await sb.auth.getUser(token);
+  if (!user) return out(401, { fehler: 'Bitte erneut anmelden.' });
+  const c = await sb.from('beta_consents').select('version').eq('version', 'ki-1').maybeSingle();
+  if (!c.data) return out(403, { fehler: 'Für die KI-Auswertung fehlt deine Einwilligung.' });
+  if (limited(user.id)) return out(429, { fehler: 'Zu viele Auswertungen in kurzer Zeit. Bitte später erneut versuchen.' });
+  let body: { image?: unknown; mediaType?: unknown };
+  try { body = await req.json(); } catch { return out(400, { fehler: 'Ungültige Anfrage.' }); }
+  try {
+    const werte = await analyzeScale({ image: String(body.image || ''), mediaType: String(body.mediaType || '') },
+      { apiKey, model: process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5', today: berlinParts(new Date()).date });
+    return out(200, { werte });
+  } catch (e) {
+    return out(422, { fehler: (e as Error).message || 'Die Auswertung ist fehlgeschlagen.' });
+  }
+}

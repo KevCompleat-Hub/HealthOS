@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 83, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 95, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -9,6 +9,7 @@ import { Store } from '../storage/store';
 import { emptyState, browserDownloads } from './support';
 import { TodayProgress, HabitsToday, Celebrate, habitsOn } from '../beta/today';
 import { usableOffer, fixText } from '../beta/review';
+import { ScaleImport, WeightQuick } from '../beta/scale';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
 /* HealthOS – Demo-Prototyp. Alle Daten sind fiktiv und liegen nur im Arbeitsspeicher. */
 /* ---------------- Datum & Format ---------------- */
@@ -200,7 +201,7 @@ function BarChart({ data, goal, height = 160, label, fmt = v => fmtNum(v), table
   const y = v => pt + (1 - v / max) * (H - pt - pb);
   const every = Math.ceil(data.length / 8);
   return <><svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label={label}>
-    {[0, max / 2].map((t, i) => <g key={i}><line x1={pl} x2={W - pr} y1={y(t)} y2={y(t)} className="c-grid" /><text x={pl - 6} y={y(t) + 4} textAnchor="end" className="c-axis">{fmt(t)}</text></g>)}
+    {(max <= 6 ? Array.from({ length: Math.floor(max) + 1 }, (_, k) => k) : [0, max / 2]).map((t, i) => <g key={i}><line x1={pl} x2={W - pr} y1={y(t)} y2={y(t)} className="c-grid" /><text x={pl - 6} y={y(t) + 4} textAnchor="end" className="c-axis">{fmt(t)}</text></g>)}
     {data.map((d, i) => {
       const bx = pl + i * bw + bw * 0.18, w = bw * 0.64;
       return <g key={d.key}>
@@ -446,7 +447,7 @@ function Week({ ctx }) {
 
     <div className="daystrip" role="tablist" aria-label="Tag wählen">
       {days.map(d => {
-        const its = data.items.filter(i => i.date === d && i.status !== 'verschoben');
+        const its = data.items.filter(i => i.date === d && i.status !== 'verschoben' && i.routine !== 'review');
         const dn = its.filter(i => i.status === 'erledigt').length;
         const due = its.some(i => effStatus(i, today) === 'faellig');
         const free = wdIdx(d) === plan.freeDay;
@@ -561,9 +562,10 @@ function StepsForm({ ctx }) {
 }
 function TrainingForm({ ctx }) {
   const { data, today, commit } = ctx;
-  const [kind, setKind] = useState('Krafttraining'); const [date, setDate] = useState(today); const [dur, setDur] = useState('45');
+  const [kind, setKind] = useState(() => (data.workouts.filter(w => w.source === 'manuell').slice(-1)[0] || {}).kind || 'Krafttraining'); const [date, setDate] = useState(today); const [dur, setDur] = useState('45');
   const [intensity, setIntensity] = useState(1); const [counts, setCounts] = useState(true); const [note, setNote] = useState(''); const [link, setLink] = useState(true); const [err, setErr] = useState('');
-  const planned = data.items.filter(i => i.type === 'training' && i.date === date && ['geplant', 'verpasst'].includes(i.status) && !i.replacedBy).sort(byTime)[0];
+  const openT = i => i.type === 'training' && ['geplant', 'verpasst'].includes(i.status) && !i.replacedBy;
+  const planned = data.items.filter(i => openT(i) && i.date === date).sort(byTime)[0] || data.items.filter(i => openT(i) && i.date >= weekStart(date) && i.date <= addDays(weekStart(date), 6)).sort(byTime)[0];
   const save = () => {
     const v = parseNum(dur);
     if (!(Number.isInteger(v) && v >= 1 && v <= 600)) return setErr('Bitte eine Dauer zwischen 1 und 600 Minuten eingeben.');
@@ -689,7 +691,7 @@ function Capture({ ctx, seg, setSeg }) {
     <header className="page-head"><h1 className="h1">Erfassen</h1></header>
     <p className="demo-note"><Icon name="info" size={16} /> {BETA.captureNote}</p>
     <Segmented label="Was möchtest du erfassen?" value={seg} onChange={setSeg} options={[['gewicht', 'Gewicht'], ['schritte', 'Schritte'], ['training', 'Training'], ['mahlzeit', 'Mahlzeit']].filter(([k]) => BETA.capture.includes(k))} />
-    {BETA.capture.includes('gewicht') && seg === 'gewicht' && <WeightForm ctx={ctx} />}
+    {BETA.capture.includes('gewicht') && seg === 'gewicht' && <><WeightForm ctx={ctx} /><ScaleImport ctx={ctx} /></>}
     {seg === 'schritte' && <StepsForm ctx={ctx} />}
     {seg === 'training' && <TrainingForm ctx={ctx} />}
     {BETA.capture.includes('mahlzeit') && seg === 'mahlzeit' && <MealForm ctx={ctx} />}
@@ -727,7 +729,7 @@ function Development({ ctx }) {
   const stepDays = Math.min(range, 30);
   const stepData = Array.from({ length: stepDays }, (_, i) => { const d = addDays(today, -(stepDays - 1 - i)); const s = data.steps.find(x => x.date === d); return { key: d, label: stepDays <= 7 ? WD[wdIdx(d)] : fmtDM(d), value: s ? s.count : null }; });
   const stepVals = stepData.filter(d => d.value != null).map(d => d.value);
-  const weeks = trainingSeries(data, weekStart(today), 8, today);
+  const weeks = trainingSeries(data, weekStart(today), 8, today).map(x => (x.goal && x.value != null && x.value >= x.goal ? { ...x, faint: false } : x));
   const kcal = Array.from({ length: 7 }, (_, i) => { const d = addDays(today, -6 + i); const n = dayNutrition(data, d); return { key: d, label: WD[wdIdx(d)], value: n ? n.kcal : null, faint: n && !n.complete }; });
   const tw = trainingsInWeek(data, today), ps = pauseStats(data, today), hs = habitStats(data, today, today), ms = missesInWeek(data, today);
   const lastWeek = addDays(today, -7);
@@ -764,7 +766,7 @@ function Development({ ctx }) {
         <div className="goal"><div className="goal-head"><span>{goal ? `${goal} Trainingseinheiten pro Woche` : 'Training, kein Wochenziel'}</span><b>{goal ? `${tw} von ${goal}` : tw}</b></div><Progress value={tw} max={goal || 1} label="Trainingsziel" /></div>
         <div className="goal"><div className="goal-head"><span>Bewegungspause an Werktagen</span><b>{ps.done} von {ps.eligible}</b></div><Progress value={ps.done} max={ps.eligible} label="Bewegungspausen" /></div>
         <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${hs.done} von ${hs.eligible}` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
-        {BETA.weight && <p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>}
+        {BETA.weight && <p className="hint">{BETA.capture.includes('mahlzeit') ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. HealthOS legt keine Zielwerte automatisch fest."}</p>}
       </div>
     </section>
 
@@ -1493,8 +1495,8 @@ function ReviewFlow({ review, ctx, answers, setAnswers, onDecide, onUndo, undoab
         <h1 id="rv-title" className="ob-title" tabIndex={-1} ref={titleRef}>{steps[i][1]}</h1>
         {i === 0 && <p className="ob-lead">{review.kind === 'week' ? `Woche vom ${fmtDM(wPeriod)} bis ${fmtDM(addDays(wPeriod, 6))}.` : review.kind === 'combined' ? `${review.sub}. Ein gemeinsamer Ablauf, Kennzahlen und Fragen erscheinen nur einmal.` : `${fmtYm(review.period)}.`} Etwa {mode === 'kurz' ? '1 bis 2' : review.minutes} Minuten.{done ? ' Dieses Review ist bereits abgeschlossen, du siehst es noch einmal an.' : ''}</p>}
         {k === 'kurz' && <><ShortSummary wm={wm} mm={mm} /><RunningMeasures list={running} /><p className="hint">Verpasste Tagesaufgaben sind abgeschlossen und werden nicht nachgeholt.</p></>}
-        {k === 'woche' && <WeekSummary m={wm} />}
-        {k === 'wochekomplett' && <><WeekSummary m={wm} /><PosNeg m={wm} /></>}
+        {k === 'woche' && <><WeekSummary m={wm} />{BETA.weight && <WeightQuick ctx={ctx} />}</>}
+        {k === 'wochekomplett' && <><WeekSummary m={wm} /><PosNeg m={wm} />{BETA.weight && <WeightQuick ctx={ctx} />}</>}
         {k === 'muster' && <PosNeg m={wm} />}
         {k === 'status' && <MonthSummary m={mm} />}
         {k === 'ziele' && <MonthGoals m={mm} />}
@@ -1971,7 +1973,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
           setCfg(BETA.restrictConfig(m.cfg));
           if (m.theme) setTheme(m.theme);
           setData(d => {
-            const st = { ...d, routines: m.routines, recState: m.recState, reviews: m.reviews, items: m.items, habits: m.habits || d.habits, habitLog: m.habitLog, pauses: m.pauses, dismissed: m.dismissed, ...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}) };
+            const st = { ...d, routines: m.routines, recState: m.recState, reviews: m.reviews, items: m.items, habits: m.habits || d.habits, habitLog: m.habitLog, pauses: m.pauses, dismissed: m.dismissed, ...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}), ...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}) };
             const mat = materialize(st, today);
             return { ...mat, habits: syncHabits(mat.habits, m.cfg) };
           });
@@ -1992,7 +1994,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
       for (const [k, b] of Object.entries(docs)) {
         const s = JSON.stringify(b);
         if (lastSaved.current[k] === s) continue;
-        const ref = k === 'settings' ? r.settings : k === 'plan' ? r.plan : k === 'habits' ? r.habits : k === 'activity' ? r.activity : r.weeks.doc(k.slice(5));
+        const ref = k === 'settings' ? r.settings : k === 'plan' ? r.plan : k === 'habits' ? r.habits : k === 'activity' ? r.activity : k === 'koerper' ? r.koerper : r.weeks.doc(k.slice(5));
         await Store.write(ref, { ...b, savedAt: new Date().toISOString() });
         lastSaved.current[k] = s; wrote = true;
       }
@@ -2004,9 +2006,9 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
   };
   useEffect(() => {
     if (store.status !== 'ready' || !conn.current || !cfg.onboardingDone) return;
-    const t = setTimeout(() => { const docs = { ...snapshotDocs(cfg, data, theme), ...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}) }; chain.current = chain.current.then(() => saveDocs(docs)).catch(() => {}); }, 800);
+    const t = setTimeout(() => { const docs = { ...snapshotDocs(cfg, data, theme), ...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}), ...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}) }; chain.current = chain.current.then(() => saveDocs(docs)).catch(() => {}); }, 800);
     return () => clearTimeout(t);
-  }, [cfg, data.items, data.routines, data.recState, data.reviews, data.habits, data.habitLog, data.pauses, data.dismissed, data.workouts, data.steps, theme, store.status]);
+  }, [cfg, data.items, data.routines, data.recState, data.reviews, data.habits, data.habitLog, data.pauses, data.dismissed, data.workouts, data.steps, data.weights, theme, store.status]);
 
   const commit = (fn, msg) => {
     setData(prev => { undoRef.current = prev; return fn(prev); });

@@ -63,3 +63,17 @@
 /* Lesbarkeit: kleine Hinweistexte nicht unter 13 px, Zahlen in der Grundschrift mit gleich breiten Ziffern */
 .hint,.coach-why,.legend,.muted.small{font-size:max(13px,.8125rem)}
 .stat-val,.kpi b{font-family:var(--font);font-variant-numeric:tabular-nums}
+.b-freq{display:block;font-size:.8125rem;color:var(--muted);margin-top:2px}
+.b-freq.good{color:var(--primary);font-weight:600}
+.b-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
+.b-sel{width:auto;min-height:40px;padding:6px 8px}
+.b-scale,.b-weight-quick{margin-top:12px}
+.b-file{position:relative;overflow:hidden;display:inline-flex}
+.b-file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.b-field{display:grid;gap:4px;margin-top:8px}
+.b-field span{font-weight:600;font-size:.9375rem}
+/* Wochenraster auf dem Handy: größere Felder, Name fest links, seitlich scrollbar */
+@media (max-width:480px){
+  table.habits th:first-child,table.habits td:first-child{position:sticky;left:0;background:var(--surface);z-index:1;max-width:120px;white-space:normal}
+  table.habits button{min-width:40px;min-height:40px}
+}

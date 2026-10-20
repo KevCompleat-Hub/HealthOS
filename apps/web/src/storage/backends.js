@@ -1,5 +1,5 @@
-// Speicher-Backends. Beide speichern dieselben Dokumente: settings, plan, habits, activity, week:JJJJ-MM-TT.
-export const DOC_KEY = /^(settings|plan|habits|activity|week:\d{4}-\d{2}-\d{2})$/;
+// Speicher-Backends. Beide speichern dieselben Dokumente: settings, plan, habits, activity, koerper, week:JJJJ-MM-TT.
+export const DOC_KEY = /^(settings|plan|habits|activity|koerper|week:\d{4}-\d{2}-\d{2})$/;
 
 /** Entwicklungs-Demo: nur im Browser dieses Geräts, nie für echte Daten. */
 export function browserBackend(storage = globalThis.localStorage, prefix = 'healthos-demo:') {
