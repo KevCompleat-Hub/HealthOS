@@ -1,12 +1,14 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 55, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 83, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
 import { Store } from '../storage/store';
 import { emptyState, browserDownloads } from './support';
+import { TodayProgress, HabitsToday, Celebrate, habitsOn } from '../beta/today';
+import { usableOffer, fixText } from '../beta/review';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
 /* HealthOS – Demo-Prototyp. Alle Daten sind fiktiv und liegen nur im Arbeitsspeicher. */
 /* ---------------- Datum & Format ---------------- */
@@ -257,8 +259,8 @@ function CoachLine({ ctx }) {
   return <div className="coach" aria-label="Hinweis zur Woche">
     <div className="coach-icon"><Icon name="spark" size={18} /></div>
     <div>
-      <p className="coach-text">{c.text}</p>
-      <p className="coach-why">{c.reason}</p>
+      <p className="coach-text">{fixText(c.text)}</p>
+      <details><summary>Warum dieser Hinweis?</summary><p className="coach-why">{fixText(c.reason)}</p></details>
       {c.action && <button className="btn small" onClick={act}>{c.action.label}</button>}
     </div>
   </div>;
@@ -272,6 +274,8 @@ function Today({ ctx, onSetup }) {
   const counted = active.filter(i => i.status !== 'ausgelassen' && classOfItem(i) !== 'optional_logging');
   const done = counted.filter(i => i.status === 'erledigt').length;
   const next = nextActions(data, today, nowMin);
+  const habToday = habitsOn(data, today).filter(h => data.habitLog[`${h.id}|${today}`] !== 'skip');
+  const habDone = habToday.filter(h => data.habitLog[`${h.id}|${today}`] === 'done').length;
   const h = Math.floor(nowMin / 60);
   const greet = h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend';
   const tw = trainingsInWeek(data, today);
@@ -283,7 +287,7 @@ function Today({ ctx, onSetup }) {
   const hs = hr.list;
   const rv = recView(data, cfg, today);
   useEffect(() => { if (BETA.recs && rv.primary && rv.primary.primaryOn !== today) markRecs([rv.primary.id], true); }, [rv.primary && rv.primary.id, today]);
-  const [arcOpen, setArcOpen] = useState(true);
+  const [arcOpen, setArcOpen] = useState(false);
   return <div className="screen">
     <header className="hero">
       <p className="greet">{greet}</p>
@@ -292,14 +296,16 @@ function Today({ ctx, onSetup }) {
     {cfg.skipped && <div className="setup-banner"><p>Du nutzt noch den {BETA.demoData ? 'Demo-Plan' : 'Standardplan'}. In etwa zwei Minuten entsteht dein persönlicher Wochenplan.</p><button className="btn small primary" onClick={onSetup}>Plan einrichten</button></div>}
     {pausedToday && <p className="callout pause-note"><Icon name="pause" size={16} /> Heute ist pausiert. Pausierte Einträge zählen nicht in deine Ziele.</p>}
 
+    <TodayProgress ctx={ctx} />
+    <Celebrate ctx={ctx} />
     <section className="block tight" aria-labelledby="next-h">
-      <div className="h2-row"><h2 className="h2" id="next-h">Als Nächstes</h2><span className="muted small">{counted.length ? `${done} von ${counted.length} heute erledigt` : ''}</span></div>
+      <div className="h2-row"><h2 className="h2" id="next-h">Als Nächstes</h2><span className="muted small">{counted.length + habToday.length ? `${done + habDone} von ${counted.length + habToday.length} heute erledigt` : ''}</span></div>
       {next.length
         ? <ul className="list">{next.map(it => <ItemRow key={it.id} it={it} ctx={ctx} showDay next />)}</ul>
-        : <Empty text={todays.length ? 'Für heute ist nichts mehr offen. Verpasstes von gestern wird nicht nachgeholt.' : 'Für heute ist nichts geplant.'} action={<button className="btn small" onClick={() => go('woche')}>Woche ansehen</button>} />}
+        : <Empty text={todays.length ? (habDone < habToday.length ? 'Termine erledigt. Unten warten noch Gewohnheiten.' : 'Alles erledigt für heute. Stark.') : 'Für heute ist nichts geplant.'} action={<button className="btn small" onClick={() => go('woche')}>Woche ansehen</button>} />}
     </section>
 
-    <ReviewCard ctx={ctx} />
+    <HabitsToday ctx={ctx} />
 
     {BETA.recs && rv.primary && <section className="block" aria-labelledby="rec-h">
       <div className="h2-row"><h2 className="h2" id="rec-h">Empfehlung für dich</h2><button className="link" onClick={() => go('gesundheit', 'fuerdich')}>Alle Empfehlungen</button></div>
@@ -311,13 +317,15 @@ function Today({ ctx, onSetup }) {
         <button className="link" aria-expanded={arcOpen} onClick={() => setArcOpen(!arcOpen)}>{arcOpen ? 'Tagesbogen ausblenden' : 'Tagesbogen zeigen'}</button></div>
       {arcOpen && <DayArc items={active} nowMin={nowMin} done={done} total={counted.length} onPick={id => openSheet({ kind: 'item', id })} />}
       <div className="stats">
-        <Stat icon="dumbbell" label="Training" value={goal ? `${tw} von ${goal}` : `${tw}`} sub={goal ? 'Einheiten diese Woche' : 'kein Trainingsziel'} onClick={() => go('woche')} />
-        <Stat icon="activity" label="Bewegungspausen" value={ps.eligible ? `${ps.done} von ${ps.eligible}` : 'keine geplant'} missing={!ps.eligible} sub="werktags, diese Woche" onClick={() => go('woche')} />
+        <Stat icon="dumbbell" label="Training" value={goal ? `${tw} von ${goal}` : `${tw}`} sub={!goal ? 'kein Trainingsziel' : tw >= goal ? 'Wochenziel erreicht' : `noch ${goal - tw} diese Woche`} onClick={() => go('woche')} />
+        <Stat icon="activity" label="Bewegungspausen" value={ps.eligible ? `${ps.done} von ${ps.eligible}` : 'keine geplant'} missing={!ps.eligible} sub={ps.eligible && ps.done >= ps.eligible ? 'alle geschafft' : ps.eligible ? `noch ${ps.eligible - ps.done} diese Woche` : 'werktags'} onClick={() => go('woche')} />
         <Stat icon="steps" label="Schritte heute" value={stepsToday ? fmtNum(stepsToday.count) : 'nicht erfasst'} missing={!stepsToday} sub={stepsToday ? 'manuell eingetragen' : 'optional, tippen zum Eintragen'} onClick={() => go('erfassen', 'schritte')} />
         {BETA.weight && <Stat icon="scale" label="Gewicht" value={wt ? `${signed(wt.delta)} kg` : 'zu wenige Werte'} missing={!wt} sub={wt ? 'Ø 7 Tage ggü. Vorwoche' : 'je Woche 1 Wert nötig'} onClick={() => go('entwicklung')} />}
       </div>
       <CoachLine ctx={ctx} />
     </section>
+
+    <ReviewCard ctx={ctx} />
 
     <section className="block">
       <h2 className="h2">Schnell erfassen</h2>
@@ -329,7 +337,7 @@ function Today({ ctx, onSetup }) {
 
     <section className="block">
       <details className="fold">
-        <summary><span>Ganzer Tag</span><span className="muted">{todays.length} Einträge</span></summary>
+        <summary><span>Ganzer Tag</span><span className="muted">{todays.length} {todays.length === 1 ? 'Eintrag' : 'Einträge'}</span></summary>
         {todays.length ? <ul className="list">{todays.map(it => <ItemRow key={it.id} it={it} ctx={ctx} />)}</ul> : <Empty text="Heute ist nichts geplant." />}
       </details>
     </section>
@@ -471,7 +479,7 @@ function Week({ ctx }) {
     <section className="panel goals">
       <div className="goal"><div className="goal-head"><span>Training</span><b>{goal ? `${tw} von ${goal}` : `${tw}, kein Ziel`}</b></div><Progress value={tw} max={goal || 1} label="Trainingseinheiten" /></div>
       <div className="goal"><div className="goal-head"><span>Bewegungspausen</span><b>{ps.eligible ? `${ps.done} von ${ps.eligible}` : 'keine geplant'}</b></div><Progress value={ps.done} max={ps.eligible} label="Bewegungspausen" /></div>
-      <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${Math.round((hs.done / hs.eligible) * 100)} %` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
+      <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${hs.done} von ${hs.eligible}` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
       {cov === 'keine' && <p className="callout gap top0">Für diese Woche liegen keine Plan-Daten vor. Das ist eine Datenlücke, keine fehlende Leistung.</p>}
       {off < 0 && goal !== goalAt(data, weekStart(today)) && cov !== 'keine' && <p className="hint top0">Wochenziel damals: {goal}. Aktuelles Ziel: {goalAt(data, weekStart(today))}.</p>}
       {ms.total > 0 && <p className="hint top0">Nicht stattgefunden: {[ms.training && `${ms.training} Training`, ms.bewegung && `${ms.bewegung} Bewegung`, ms.sonst && `${ms.sonst} Sonstiges`].filter(Boolean).join(', ')}. Wird nicht nachgeholt.</p>}
@@ -692,7 +700,7 @@ function Capture({ ctx, seg, setSeg }) {
 function AcceptedMeasures({ ctx }) {
   const { data, today, cfg, commit } = ctx;
   const accepted = computeRecs(data, cfg, today).filter(r => r.status === 'angenommen');
-  if (!accepted.length) return <Empty text="Noch keine Empfehlung angenommen. Vorschläge findest du unter Gesundheit, Für dich." />;
+  if (!accepted.length) return <Empty text={BETA.recs ? "Noch keine Empfehlung angenommen. Vorschläge findest du unter Gesundheit, Für dich." : "Noch keine Maßnahme angenommen."} />;
   const days = weekDays(today);
   return <ul className="list">{accepted.map(r => {
     const s = (data.recState || {})[r.id] || {};
@@ -755,7 +763,7 @@ function Development({ ctx }) {
       <div className="panel goals">
         <div className="goal"><div className="goal-head"><span>{goal ? `${goal} Trainingseinheiten pro Woche` : 'Training, kein Wochenziel'}</span><b>{goal ? `${tw} von ${goal}` : tw}</b></div><Progress value={tw} max={goal || 1} label="Trainingsziel" /></div>
         <div className="goal"><div className="goal-head"><span>Bewegungspause an Werktagen</span><b>{ps.done} von {ps.eligible}</b></div><Progress value={ps.done} max={ps.eligible} label="Bewegungspausen" /></div>
-        <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${Math.round(hs.done / hs.eligible * 100)} %` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
+        <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${hs.done} von ${hs.eligible}` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
         {BETA.weight && <p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>}
       </div>
     </section>
@@ -790,11 +798,11 @@ function Development({ ctx }) {
         <p className="legend"><span className="lg-missing" /> nicht erfasst, wird nicht als 0 gezählt</p>
       </div>
     </section>
-    <section className="block">
+    {BETA.capture.includes('mahlzeit') && <section className="block">
       <h3 className="h3 top0">Kalorien, letzte 7 Tage</h3>
       <div className="panel"><BarChart data={kcal} label="Kalorien pro Tag" table="kcal" />
         <p className="legend"><span className="lg-bar" /> vollständig <span className="lg-bar faint" /> unvollständig <span className="lg-missing" /> nicht erfasst</p></div>
-    </section>
+    </section>}
   </div>;
 }
 
@@ -1002,7 +1010,7 @@ function ItemSheet({ id, ctx, close }) {
       <button className="btn ghost wide" onClick={() => run(x => A.setStatus(x, it.id, 'ausgelassen'), 'Verworfen')}>Nicht mehr nötig, verwerfen</button>
     </>}
     {(st === 'geplant' || st === 'erledigt') && <>
-      <button className="btn primary wide" onClick={() => run(x => A.toggleItem(x, it.id, today), st === 'erledigt' ? `Wieder offen: ${it.title}` : `Erledigt: ${it.title}`)}>{st === 'erledigt' ? 'Wieder öffnen' : 'Als erledigt markieren'}</button>
+      <button className="btn primary wide" disabled={it.date > today && st !== 'erledigt'} title={it.date > today ? 'Erst am Tag selbst abhakbar' : undefined} onClick={() => run(x => A.toggleItem(x, it.id, today), st === 'erledigt' ? `Wieder offen: ${it.title}` : `Erledigt: ${it.title}`)}>{st === 'erledigt' ? 'Wieder öffnen' : 'Als erledigt markieren'}</button>
       {st === 'geplant' && <>
         <button className="btn wide" onClick={() => openSheet({ kind: 'edit', id: it.id })}><Icon name="edit" size={18} /> Uhrzeit oder Dauer ändern</button>
         <h3 className="h3">Verschieben auf</h3>
@@ -1123,6 +1131,7 @@ function InfoSheet({ close, onSettings }) {
       <p className="hint">{BETA.demoData ? "Nur Einstellungen, Routinen, Wochenplan, Gewohnheiten und Pausen ohne Grund, privat für dein Konto. Messwerte, Laborwerte, Termine, Gewicht und laborbezogene Empfehlungen bleiben Demo-Daten dieser Sitzung." : BETA.info.stored}</p>
       <h3 className="h3">Was bewusst fehlt</h3>
       <p className="hint">{BETA.demoData ? "Keine Push-Benachrichtigungen, kein Datei-Upload, keine Verbindung zu Health Connect, keine KI-Auswertung. Diese Datei ist noch keine installierbare App (PWA)." : BETA.info.missing}</p>
+      {!BETA.demoData && <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>}
       <button className="btn wide" onClick={() => { close(); onSettings(); }}>Zu den Einstellungen</button>
     </div>
   </Sheet>;
@@ -1369,9 +1378,9 @@ function WeekSummary({ m }) {
       <MiniStat label="Training" value={noPlan ? 'keine Daten' : m.goal ? `${m.trDone} von ${m.goal}` : `${m.trDone}`} sub={noPlan ? '' : m.goal ? (m.trDone >= m.goal ? 'Ziel dieser Woche erreicht' : m.trOpen ? `${m.trOpen} noch geplant` : `Ziel dieser Woche: ${m.goal}`) : 'kein Ziel in dieser Woche'} />
       <MiniStat label="Bewegungspausen" value={m.pauses.eligible ? `${m.pauses.done} von ${m.pauses.eligible}` : 'keine Daten'} sub={m.pauseMissed ? `${m.pauseMissed} verpasst, abgeschlossen` : m.pauses.eligible ? 'nichts verpasst' : ''} />
       <MiniStat label="Gewohnheiten" value={m.habits.eligible ? `${pct(m.habits.done, m.habits.eligible)} %` : 'keine Einträge'} sub={m.habits.eligible ? `${m.habits.done} von ${m.habits.eligible} Haken` : ''} />
-      <MiniStat label="Gewicht" value={wDelta != null ? `${signed(wDelta)} kg` : m.weight ? `${m.weight.n} Messung${m.weight.n > 1 ? 'en' : ''}` : 'nicht erfasst'} sub={wDelta != null ? 'Ø ggü. Vorwoche' : m.weight ? 'kein Vergleich möglich' : 'optional'} />
+      {BETA.weight && <MiniStat label="Gewicht" value={wDelta != null ? `${signed(wDelta)} kg` : m.weight ? `${m.weight.n} Messung${m.weight.n > 1 ? 'en' : ''}` : 'nicht erfasst'} sub={wDelta != null ? 'Ø ggü. Vorwoche' : m.weight ? 'kein Vergleich möglich' : 'optional'} />}
       <MiniStat label="Schritte" value={m.steps ? `Ø ${fmtNum(m.steps.avg)}` : 'nicht erfasst'} sub={m.steps ? `an ${m.steps.n} von 7 Tagen` : 'optional'} />
-      <MiniStat label="Mahlzeiten" value={`${m.nutDays} von ${m.nutDue}`} sub={m.nutFull ? `${m.nutFull} Tage vollständig` : 'Tage erfasst'} />
+      {BETA.capture.includes('mahlzeit') && <MiniStat label="Mahlzeiten" value={`${m.nutDays} von ${m.nutDue}`} sub={m.nutFull ? `${m.nutFull} Tage vollständig` : 'Tage erfasst'} />}
     </div>
     {m.routines.length > 0 && <section className="r-sec"><h3 className="h3 top0">Routinen</h3><ul className="bars">{[...m.routines].sort((a, b) => b.rate - a.rate).map(r => <li key={r.id}><span>{r.title}</span><Progress value={r.done} max={r.eligible} label={r.title} /><small>{r.done} von {r.eligible}</small></li>)}</ul></section>}
     <p className="callout"><Icon name="info" size={14} /> Verpasste Tagesaufgaben wie Bewegungspausen sind abgeschlossen. Sie werden nicht nachgeholt und erzeugen keine neuen Aufgaben.</p>
@@ -1396,7 +1405,7 @@ function MonthSummary({ m, showCurrent }) {
       <tr><th scope="row">Gewohnheiten</th><td>{rate(m.habits.now, 30)}</td><td>{rate(m.habits.prev, 30)}</td><td>nicht genug Daten</td></tr>
       <tr><th scope="row">Gewicht</th><td>{wc(m.weight.wc30)}</td><td>–</td><td>90 Tage: {wc(m.weight.wc90)}{m.weight.wcAll ? `, gesamt seit ${fmtDM(m.weight.firstW)}: ${wc(m.weight.wcAll)}` : ''}</td></tr>
       <tr><th scope="row">Schritte</th><td>{m.steps.now ? `Ø ${fmtNum(m.steps.now.avg)} an ${m.steps.now.n} Tagen` : 'nicht erfasst'}</td><td>{m.steps.prev ? `Ø ${fmtNum(m.steps.prev.avg)} an ${m.steps.prev.n} Tagen` : 'nicht erfasst'}</td><td>–</td></tr>
-      <tr><th scope="row">Mahlzeiten erfasst</th><td>{m.nutDays ? `${m.nutDays} Tage` : 'nicht erfasst'}</td><td>–</td><td>–</td></tr>
+      {BETA.capture.includes('mahlzeit') && <tr><th scope="row">Mahlzeiten erfasst</th><td>{m.nutDays ? `${m.nutDays} Tage` : 'nicht erfasst'}</td><td>–</td><td>–</td></tr>}
     </tbody></table></div>
     <div className="panel">
       <BarChart data={m.training.series} goal={m.training.goalNow || null} goalLabel="Ziel aktuell" label="Trainingseinheiten der letzten zwölf Wochen" table="Einheiten" extraCol={['Ziel damals', d => (d.goal == null ? '–' : d.goal)]} coverageCol />
@@ -1456,12 +1465,12 @@ function ReviewFlow({ review, ctx, answers, setAnswers, onDecide, onUndo, undoab
   const wm = useMemo(() => weekMetrics(data, wPeriod, today, cfg), [review.key]);
   const mm = useMemo(() => (review.kind !== 'week' ? monthMetrics(data, review.period, today, cfg) : null), [review.key]);
   const merged = review.kind === 'week' ? wm : { ...wm, ...mm, ws: wm.ws, goal: wm.goal };
-  const questions = useMemo(() => (mode === 'kurz' ? [] : pickQuestions(review.kind, merged, cfg, previousQuestionIds(data, review.kind, review.key))), [review.key, mode]);
+  const questions = useMemo(() => (mode === 'kurz' ? [] : pickQuestions(review.kind, merged, cfg, previousQuestionIds(data, review.kind, review.key)).filter(q => BETA.recs || q.id !== 'ernaehrung')), [review.key, mode]);
   const k = steps[i][0];
   const maxNew = mode === 'kurz' ? 1 : 3;
   const ansKey = JSON.stringify(answers);
   /* Vorschläge werden bei geänderten Antworten neu berechnet. Bereits entschiedene bleiben unverändert. */
-  const measures = useMemo(() => (k === 'massnahmen' ? coachMeasures(review.kind === 'week' ? 'week' : 'month', review.kind === 'week' ? wm : { ...mm, weakHabit: wm.weakHabit, pauseHist2: wm.pauseHist2 }, answers, data, cfg, today, review.keys, maxNew) : []), [k, ansKey, data, cfg]);
+  const measures = useMemo(() => (k === 'massnahmen' ? coachMeasures(review.kind === 'week' ? 'week' : 'month', review.kind === 'week' ? wm : { ...mm, weakHabit: wm.weakHabit, pauseHist2: wm.pauseHist2 }, answers, data, cfg, today, review.keys, maxNew).filter(x => BETA.recs || !x.id.startsWith('empfehlung-')) : []), [k, ansKey, data, cfg]);
   const [lastAns, setLastAns] = useState(null);
   useEffect(() => { if (k === 'massnahmen') setLastAns(a => (a === null ? ansKey : a)); }, [k]);
   const recs = review.keys.map(x => (data.reviews || {})[x] || {});
@@ -1478,7 +1487,7 @@ function ReviewFlow({ review, ctx, answers, setAnswers, onDecide, onUndo, undoab
     <div className="ob-inner">
       <div className="ob-top">
         <div className="ob-progress" style={{ gridTemplateColumns: `repeat(${steps.length},1fr)` }} aria-hidden="true">{steps.map((_, n) => <span key={n} className={n <= i ? 'on' : ''} />)}</div>
-        <div className="ob-meta"><span aria-live="polite">{review.label}{mode === 'kurz' ? ', Kurzfassung' : ''}, Schritt {i + 1} von {steps.length}</span><button className="link" onClick={close}>Schließen</button></div>
+        <div className="ob-meta"><span aria-live="polite">{review.label}{mode === 'kurz' ? ', Kurzfassung' : ''}, Schritt {i + 1} von {steps.length}</span><button className="link" onClick={close}>Später fortsetzen</button></div>
       </div>
       <div className="ob-body" ref={ref}>
         <h1 id="rv-title" className="ob-title" tabIndex={-1} ref={titleRef}>{steps[i][1]}</h1>
@@ -1523,7 +1532,7 @@ function ReviewFlow({ review, ctx, answers, setAnswers, onDecide, onUndo, undoab
 }
 function ReviewCard({ ctx }) {
   const { data, cfg, today, nowMin, startReview, snoozeReview, skipReview } = ctx;
-  const offer = reviewOffer(data, cfg, today, nowMin);
+  const offer = usableOffer(reviewOffer(data, cfg, today, nowMin), data, today);
   if (offer) return <section className="block" aria-labelledby="rv-h">
     <div className="review-card">
       <div className="rc-icon" aria-hidden="true"><Icon name="spark" size={20} /></div>
@@ -1560,7 +1569,7 @@ function ReviewHistory({ ctx }) {
           <td>{cov === 'keine' ? 'keine Daten' : `${trainingsInWeek(data, ws)} von ${g}`}</td>{showNow && <td>{goalNow}</td>}
           <td>{pa.eligible ? `${pa.done} von ${pa.eligible}` : 'keine Daten'}</td>
           <td>{(r.measures || []).filter(x => x.decision === 'übernommen').map(x => <span key={x.id} className="m-line">{x.title}{evalMeasure(x, data, today) ? `: ${evalMeasure(x, data, today)}` : ''}</span>)}{!(r.measures || []).some(x => x.decision === 'übernommen') && '–'}</td></tr>; })}
-      </tbody></table></div></> : <Empty text="Noch keine Reviews. Der erste Check-in erscheint zum eingestellten Zeitpunkt auf Heute." />}
+      </tbody></table></div></> : <Empty text="Noch keine Reviews. Dein erster Check-in erscheint auf Heute, sobald eine Woche mit Plan vorliegt." />}
     {entries.filter(([, r]) => r.kind === 'month').length > 0 && <p className="hint">Monatsreviews: {entries.filter(([, r]) => r.kind === 'month').map(([k, r]) => `${fmtYm(k.slice(2))} ${REVIEW_STATUS[r.status].toLowerCase()}`).join(', ')}.</p>}
     <p className="hint">Werte werden aus dem Plan neu berechnet. Das Trainingsziel ist das damals geltende Ziel aus den Routinenversionen. Antworten aus Reviews werden nicht gespeichert.</p>
   </section>;
@@ -1679,7 +1688,7 @@ function StepNutrition({ cfg, setCfg, onTouch, body, setBody }) {
     <h3 className="h3">Gewohnheiten</h3>
     <Chips multi options={Object.entries(HABIT_LIBRARY).filter(([k]) => k !== 'vielfalt').map(([k, h]) => [k, h.name])} value={cfg.habits} onChange={v => { onTouch && onTouch(); setCfg(c => ({ ...c, habits: v.slice(0, 5) })); }} />
     <div className="btn-row"><button className="btn small" onClick={() => { onTouch && onTouch(); setCfg(c => ({ ...c, habits: suggestHabits(c.goals) })); }}>Vorschlag passend zu meinen Zielen</button></div>
-    <p className="hint">Höchstens fünf. Eigene Gewohnheiten legst du in der Woche an. Ein Kalorienziel wird nicht automatisch festgelegt.</p>
+    <p className="hint">Höchstens fünf. Eigene Gewohnheiten legst du in der Woche oder über die Ideen auf Heute an.</p>
   </>;
 }
 function StepReminders({ cfg, setCfg }) {
@@ -1879,8 +1888,9 @@ function Settings({ ctx, cfg, applyConfig, store, theme, setTheme, onExport, onI
     {ctx.account && <section className="block">
       <h2 className="h2">Konto</h2>
       <div className="panel">
-        <p className="hint top0">Angemeldet als {ctx.account.email}. Zweiter Faktor aktiv.</p>
+        <p className="hint top0">Angemeldet als {ctx.account.email}.</p>
         <div className="btn-row"><button className="btn small" onClick={ctx.account.signOut}>Abmelden</button></div>
+        <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>
       </div>
     </section>}
     <section className="block">

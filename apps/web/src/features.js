@@ -33,3 +33,27 @@ FEATURES.info = {
   stored: 'Einstellungen, Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund, Reviews ohne Antworten sowie Training und Schritte, privat für dein Konto. Gewicht, Mahlzeiten, Blutwerte, Termine und Dokumente sind ausgeschaltet.',
   missing: 'Keine Push-Benachrichtigungen, kein Datei-Upload, keine Verbindung zu Health Connect, keine KI-Auswertung, keine medizinischen Empfehlungen.',
 };
+
+// Ziel „Abnehmen“ bezieht sich auf Gewicht, das in der Beta nicht erfasst wird (Review vom 20.10.2026).
+FEATURES.hiddenGoals = ['werte', 'abnehmen'];
+
+/** Feedback und Rechtstexte. Adresse über die Umgebungsvariable NEXT_PUBLIC_FEEDBACK_EMAIL. */
+FEATURES.feedbackEmail = process.env.NEXT_PUBLIC_FEEDBACK_EMAIL || '';
+
+/** Ideen für Gewohnheiten mit festem Auslöser. Werden als eigene Gewohnheiten angelegt, ohne Gesundheitsaussage. */
+FEATURES.habitIdeas = [
+  { key: 'wasser-morgens', name: 'Glas Wasser nach dem Aufstehen', when: 'morgens' },
+  { key: 'flasche', name: 'Wasserflasche am Arbeitsplatz auffüllen', when: 'zum Arbeitsbeginn' },
+  { key: 'gehen-mittag', name: '10 Minuten gehen nach dem Mittagessen', when: 'mittags' },
+  { key: 'telefon-gehen', name: 'Telefonate im Gehen führen', when: 'bei Anrufen' },
+  { key: 'mobilisieren', name: '2 Minuten dehnen nach dem Aufstehen', when: 'morgens' },
+  { key: 'tageslicht', name: '10 Minuten Tageslicht vor 12 Uhr', when: 'vormittags' },
+  { key: 'sporttasche', name: 'Sporttasche am Vorabend packen', when: 'abends' },
+  { key: 'protein-frueh', name: 'Proteinquelle zum Frühstück', when: 'morgens' },
+  { key: 'snack-teller', name: 'Snacks auf einen Teller statt aus der Packung', when: 'bei Snacks' },
+  { key: 'abendessen-frueh', name: 'Abendessen 2 Stunden vor dem Schlafen', when: 'abends' },
+  { key: 'handy-raus', name: 'Handy außerhalb des Schlafzimmers laden', when: 'abends' },
+  { key: 'tag-planen', name: 'Morgens festlegen: Was ist heute meine Bewegung?', when: 'morgens' },
+  { key: 'alkoholfrei', name: 'Alkoholfreier Abend', when: 'abends' },
+  { key: 'woche-planen', name: 'Trainingstermine der Woche festlegen', when: 'sonntags' },
+];

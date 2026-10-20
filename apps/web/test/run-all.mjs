@@ -5,6 +5,8 @@ const steps = [
   ['Typprüfung', 'npx', ['tsc', '--noEmit']],
   ['Oberfläche Beta (Speicher wie Supabase)', 'node', ['test/ui.mjs', 'beta']],
   ['Oberfläche Entwicklungs-Demo', 'node', ['test/ui.mjs', 'demo']],
+  ['Motivation und Review-Korrekturen (Beta)', 'node', ['test/ui-w5.mjs', 'beta']],
+  ['Motivation und Review-Korrekturen (Demo)', 'node', ['test/ui-w5.mjs', 'demo']],
 ];
 if (process.env.HEALTHOS_DB_TEST) steps.push(['Anbindung über Supabase-Client', 'node', ['test/db.mjs']], ['Oberfläche gegen Datenbank', 'node', ['test/ui.mjs', 'beta-db']]);
 for (const [name, cmd, args] of steps) {

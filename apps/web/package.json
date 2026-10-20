@@ -1,6 +1,6 @@
 {
   "name": "@healthos/web",
-  "version": "0.2.0-w3",
+  "version": "0.3.0-w5",
   "private": true,
   "scripts": {
     "dev": "next dev",

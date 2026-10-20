@@ -1,0 +1,6 @@
+.legal{max-width:720px;margin:0 auto;padding:24px 18px 64px;font-family:var(--font);color:var(--ink);background:var(--bg);min-height:100dvh;line-height:1.55}
+.legal h1{font-family:var(--display);font-size:1.75rem;margin:8px 0 16px}
+.legal h2{font-family:var(--display);font-size:1.125rem;margin:24px 0 8px}
+.legal .todo{background:#FFF3C4;color:#4A3B00;padding:2px 6px;border-radius:6px}
+.legal .draft{border:1px solid var(--line);background:var(--surface);padding:12px;border-radius:12px}
+.legal a{color:var(--primary)}
