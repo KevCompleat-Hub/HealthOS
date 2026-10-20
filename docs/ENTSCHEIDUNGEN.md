@@ -12,3 +12,9 @@ Getroffen von Kevin Gimpel nach externer Prüfung des Implementierungsplans HOS-
 | E-6 | Zwei-Faktor-Authentifizierung ist vor der ersten Speicherung echter Gesundheitsdaten Pflicht. | Einwilligungen für Gesundheitsdaten lassen sich erst nach eingerichtetem zweiten Faktor erteilen. Datenbankseitige Prüfung auf AAL2 in M2 klären. |
 | E-7 | pnpm-Workspaces. | Umgesetzt in M1. |
 | E-8 | Android-Technologie erst nach M7 festlegen. | Keine Arbeiten an der Begleit-App vor M7. |
+
+## Nachtrag 20.10.2026
+
+| Nr. | Entscheidung | Folgen für die Umsetzung |
+| --- | --- | --- |
+| E-9 | Das Supabase-Projekt bleibt vorerst in London (`eu-west-2`) und zieht nicht nach Frankfurt um. | Abweichung von der Vorgabe „EU-Hosting“. Zulässigkeit der Übermittlung nach Großbritannien (Angemessenheitsbeschluss) ist ungeprüft. Vor der ersten Verarbeitung echter Testerdaten erneut entscheiden, ob ein Umzug nach `eu-central-1` erfolgt. Ein Umzug erfordert ein neues Projekt, beide Migrationen und neue Umgebungsvariablen in Vercel. |
