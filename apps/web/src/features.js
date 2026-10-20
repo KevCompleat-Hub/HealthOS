@@ -63,3 +63,6 @@ FEATURES.scaleAi = process.env.NEXT_PUBLIC_SCALE_AI === 'on';
 
 /** Ernährungs-Ideen und Zutaten-Katalog (allgemeine Lebensmittelauswahl, Entscheidung E-12). */
 FEATURES.foodGuide = true;
+
+/** KI-Rezeptideen, gleiche Freischaltung wie die Screenshot-Auswertung (NEXT_PUBLIC_SCALE_AI=on). */
+FEATURES.aiRecipes = FEATURES.scaleAi;

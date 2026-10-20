@@ -46,6 +46,42 @@ function FoodItem({ f, ctx }) {
   </li>;
 }
 
+/** KI-Rezeptideen: nur Ziele, Trainingstage und Zutaten-Namen werden übertragen. Eigene Einwilligung „ki-2“. */
+export function RecipeIdeas({ ctx, foods, post = (body, token) => fetch('/api/rezepte', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) }) }) {
+  const { cfg, account } = ctx; const sb = account && account.supabase;
+  const [consent, setConsent] = useState(null); const [state, setState] = useState('idle'); const [list, setList] = useState([]); const [wishes, setWishes] = useState(''); const [msg, setMsg] = useState('');
+  useEffect(() => { if (sb) sb.from('beta_consents').select('version').eq('version', 'ki-2').maybeSingle().then(r => setConsent(!!(r && r.data))); }, [sb]);
+  if (!BETA.aiRecipes || !sb) return null;
+  const give = async () => { const r = await sb.from('beta_consents').insert({ user_id: account.userId, version: 'ki-2' }); if (r.error) setMsg('Die Einwilligung konnte nicht gespeichert werden.'); else setConsent(true); };
+  const run = async () => {
+    setState('laden'); setMsg('');
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const body = { goals: (cfg.goals || []).filter(g => !BETA.hiddenGoals.includes(g)).map(g => GOALS[g]), trainingDays: (cfg.training && cfg.training.perWeek) || 0, foods: foods.slice(0, 12).map(f => f.name), wishes };
+      const r = await post(body, session && session.access_token); const j = await r.json().catch(() => ({}));
+      if (!r.ok) { setState('idle'); return setMsg(j.fehler || 'Rezeptideen sind gerade nicht möglich.'); }
+      setList(j.rezepte || []); setState('fertig');
+    } catch { setState('idle'); setMsg('Rezeptideen sind gerade nicht möglich.'); }
+  };
+  return <section className="b-principles" aria-labelledby="rez-h">
+    <h3 className="h3 top0" id="rez-h">Rezeptideen mit KI</h3>
+    {consent === false ? <>
+      <p className="hint">Für Rezeptideen werden deine Ziele, die Zahl deiner Trainingstage und die passenden Zutaten an den KI-Dienst Anthropic (Claude) übertragen. Keine Körperwerte, keine Namen. Die Vorschläge werden nicht gespeichert.</p>
+      <button className="btn small" onClick={give}>Einwilligen</button>
+    </> : consent === null ? null : <>
+      <label className="b-field"><span>Wünsche (optional)</span><input className="input" placeholder="z. B. vegetarisch, schnell, mit Linsen" value={wishes} onChange={e => setWishes(e.target.value)} maxLength={200} /></label>
+      <div className="btn-row"><button className="btn small primary" onClick={run} disabled={state === 'laden'}>{state === 'laden' ? 'Wird erstellt …' : state === 'fertig' ? 'Neue Ideen' : '3 Rezeptideen erstellen'}</button></div>
+      {list.length > 0 && <ul className="b-foods">{list.map((r, i) => <li key={i} className="b-food">
+        <div className="b-food-head"><b>{r.title}</b><span className="b-food-group">{r.minutes} Min.</span></div>
+        <p className="b-food-tip">{r.fits}</p>
+        <details><summary>Zutaten und Zubereitung</summary><ul>{r.ingredients.map((x, k) => <li key={k}>{x}</li>)}</ul><ol>{r.steps.map((x, k) => <li key={k}>{x}</li>)}</ol></details>
+      </li>)}</ul>}
+      {list.length > 0 && <p className="hint">KI-Vorschläge ohne Gewähr. Mengen und Zutaten bei Unverträglichkeiten selbst prüfen.</p>}
+    </>}
+    {msg && <p className="err" role="alert">{msg}</p>}
+  </section>;
+}
+
 export function FoodCatalog({ ctx, close, trainingToday }) {
   const { cfg, data } = ctx;
   const [filter, setFilter] = useState('passend');
@@ -62,6 +98,7 @@ export function FoodCatalog({ ctx, close, trainingToday }) {
         <ul>{FOOD_PRINCIPLES.filter(p => !p.protein || showProtein).map((p, i) => <li key={i}>{p.text} <Source k={p.source} /></li>)}</ul>
         {showProtein && kg && <p className="hint">Rechnerisch bei deinem letzten Gewicht von {fmtNum(kg.kg, 1)} kg: etwa {fmtNum(Math.round(kg.kg * 1.4))} bis {fmtNum(Math.round(kg.kg * 2))} g Eiweiß am Tag. Nur eine Orientierung, keine persönliche Ernährungsberatung.</p>}
       </details>
+      <RecipeIdeas ctx={ctx} foods={ranked} />
       <div className="b-filter" role="group" aria-label="Auswahl">
         {[['passend', 'Passend zu mir'], ...Object.entries(FOOD_GROUPS), ['alle', 'Alle']].map(([k, l]) =>
           <button key={k} className={`chip${filter === k ? ' on' : ''}`} aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>)}

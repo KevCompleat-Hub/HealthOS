@@ -1,0 +1,24 @@
+// Tests der Rezeptideen ohne Netz.
+import { buildSync } from 'esbuild';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here = path.dirname(fileURLToPath(import.meta.url));
+const out = path.join(here, '../.test/recipes.cjs');
+buildSync({ entryPoints: [path.join(here, '../src/server/recipes.ts')], bundle: true, platform: 'node', format: 'cjs', outfile: out, logLevel: 'error' });
+const R = createRequire(import.meta.url)(out);
+let n = 0, f = 0; const ok = (c, m) => { n++; if (!c) f++; console.log(`${c ? 'ok  ' : 'FEHL'} ${m}`); };
+const good = { recipes: [1, 2, 3, 4].map(i => ({ title: `Linsen-Bowl ${i}`, minutes: 20, ingredients: ['150 g rote Linsen', '1 Paprika'], steps: ['Linsen garen', 'Anrichten'], fits: 'Eiweißreich und sättigend.' })) };
+const p = R.parseRecipes(JSON.stringify(good));
+ok(p && p.length === 3 && p[0].ingredients.length === 2, 'höchstens 3 gültige Rezepte');
+ok(R.parseRecipes('{"recipes":[{"title":"X","minutes":10,"ingredients":["a"],"steps":["b"],"fits":"hat 450 kcal"}]}') === null, 'Rezepte mit Kalorienangaben werden verworfen');
+ok(R.parseRecipes('kein JSON') === null && R.parseRecipes('{"recipes":"x"}') === null, 'ungültige Antworten ergeben null');
+ok(R.validRequest({ goals: ['Fitter werden'], foods: ['Linsen'], trainingDays: 9 }).trainingDays === 7, 'Anfrage wird begrenzt');
+ok(R.validRequest({ goals: [], foods: [] }) === null && R.validRequest(null) === null, 'leere oder fehlende Anfrage abgelehnt');
+let sent = null;
+const fake = async (u, init) => { sent = JSON.parse(init.body); return { ok: true, json: async () => ({ content: [{ type: 'text', text: JSON.stringify(good) }] }) }; };
+const r = await R.suggestRecipes({ goals: ['Fitter werden'], foods: ['Linsen', 'Skyr'], trainingDays: 3, wishes: 'vegetarisch' }, { apiKey: 'k', model: 'claude-haiku-5-5', fetchImpl: fake });
+ok(r.length === 3, 'Rezeptideen werden geliefert');
+ok(/Linsen, Skyr/.test(sent.messages[0].content) && !/kg|Gewicht/.test(sent.messages[0].content), 'übertragen werden nur Ziele, Trainingstage, Zutaten und Wünsche');
+console.log(`\n${n - f} von ${n} Tests der Rezeptideen bestanden`);
+process.exit(f ? 1 : 0);

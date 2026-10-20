@@ -4,6 +4,8 @@ import { spawnSync } from 'node:child_process';
 const steps = [
   ['Typprüfung', 'npx', ['tsc', '--noEmit']],
   ['Screenshot-Auswertung (ohne Netz)', 'node', ['test/scale.mjs']],
+  ['Rezeptideen (ohne Netz)', 'node', ['test/recipes.mjs']],
+  ['Erinnerungslogik Push (ohne Netz)', 'node', ['test/push.mjs']],
   ['Oberfläche Beta (Speicher wie Supabase)', 'node', ['test/ui.mjs', 'beta']],
   ['Oberfläche Entwicklungs-Demo', 'node', ['test/ui.mjs', 'demo']],
   ['Motivation und Review-Korrekturen (Beta)', 'node', ['test/ui-w5.mjs', 'beta']],

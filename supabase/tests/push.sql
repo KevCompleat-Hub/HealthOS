@@ -1,0 +1,25 @@
+-- Datenbanktests Push. Bricht bei einem Fehlschlag mit Fehler ab.
+create temp table r (name text, ok boolean);
+grant all on r to authenticated, anon;
+create function pg_temp.fails(q text) returns boolean language plpgsql as $$ begin execute q; return false; exception when others then return true; end $$;
+grant execute on function pg_temp.fails(text) to authenticated, anon;
+insert into auth.users values ('44444444-4444-4444-4444-444444444444', 'p@test.local'), ('55555555-5555-5555-5555-555555555555', 'q@test.local');
+insert into public.push_config values (1, 'PUBLIC', 'PRIVATE', 'GEHEIM', 'mailto:x@y.z');
+set role authenticated;
+select set_config('request.jwt.claims', '{"sub":"44444444-4444-4444-4444-444444444444","role":"authenticated"}', false);
+insert into push_subscriptions (user_id, endpoint, p256dh, auth) values ('44444444-4444-4444-4444-444444444444', 'https://push.example/abc', 'k', 'a');
+insert into r select 'eigenes Gerät angemeldet', count(*) = 1 from push_subscriptions;
+insert into r select 'öffentlicher Schlüssel abrufbar', public.push_public_key() = 'PUBLIC';
+insert into r select 'privater Schlüssel nicht lesbar', pg_temp.fails('select private_key from push_config');
+insert into r select 'Versandprotokoll nicht lesbar', pg_temp.fails('select * from push_log');
+insert into r select 'nur https-Endpunkte', pg_temp.fails($$insert into push_subscriptions (user_id, endpoint, p256dh, auth) values ('44444444-4444-4444-4444-444444444444', 'http://x', 'k', 'a')$$);
+insert into r select 'kein Gerät für andere anmelden', pg_temp.fails($$insert into push_subscriptions (user_id, endpoint, p256dh, auth) values ('55555555-5555-5555-5555-555555555555', 'https://push.example/x', 'k', 'a')$$);
+select set_config('request.jwt.claims', '{"sub":"55555555-5555-5555-5555-555555555555","role":"authenticated"}', false);
+insert into r select 'fremde Geräte unsichtbar', count(*) = 0 from push_subscriptions;
+reset role; set role anon; select set_config('request.jwt.claims', '', false);
+insert into r select 'ohne Anmeldung kein Schlüssel', pg_temp.fails('select public.push_public_key()');
+reset role;
+delete from auth.users where id = '44444444-4444-4444-4444-444444444444';
+insert into r select 'Kontolöschung entfernt Geräte', (select count(*) from push_subscriptions) = 0;
+select (case when ok then 'ok   ' else 'FEHL ' end) || name from r;
+do $$ declare f int; t int; begin select count(*) filter (where not ok), count(*) into f, t from r; raise notice '% von % Push-Datenbanktests bestanden', t - f, t; if f > 0 then raise exception '% Tests fehlgeschlagen', f; end if; end $$;
