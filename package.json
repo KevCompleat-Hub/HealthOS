@@ -1,0 +1,27 @@
+{
+  "name": "healthos",
+  "private": true,
+  "version": "0.2.0-w3",
+  "description": "HealthOS Monorepo, Phase M1: Domänenkern in TypeScript mit Paritätstests gegen die Referenz v5",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "build:reference": "pnpm --filter @healthos/reference build",
+    "test:unit": "pnpm --filter @healthos/domain test",
+    "test:parity": "node tools/parity/run.mjs",
+    "test:reference-suites": "node tools/run-reference-suites.mjs",
+    "test": "pnpm typecheck && pnpm build:reference && pnpm test:unit && pnpm test:parity && pnpm test:reference-suites",
+    "build:domain": "pnpm --filter @healthos/domain build",
+    "build:web": "pnpm build:domain && node tools/build-web-ui.mjs && pnpm --filter @healthos/web build",
+    "test:web": "pnpm --filter @healthos/web test"
+  },
+  "devDependencies": {
+    "esbuild": "0.21.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "jsdom": "24.1.3"
+  }
+}

@@ -1,0 +1,16 @@
+const { JSDOM } = require('jsdom'); const React=require('react'); const {renderToString}=require('react-dom/server');
+const M=require('./app.test.js');
+const cfg=M.normalizeConfig({...M.DEFAULT_CONFIG,onboardingDone:true}); const T='2026-11-01'; const s=M.seed(T,cfg);
+const ctx={data:s,cfg,today:T,nowMin:1110,openSheet(){},startReview(){},snoozeReview(){},skipReview(){},commit(){},go(){},markRecs(){},ensureHorizon(){}};
+const pages=[];
+['heute','woche','routinen','erfassen','entwicklung','gesundheit','einstellungen'].forEach(t=>pages.push([t,renderToString(React.createElement(M.App,{initialTab:t,initialStore:{status:'none'},initialConfig:cfg}))]));
+const off=M.reviewOffer(s,cfg,T,1110);
+for(let st=0;st<7;st++) pages.push(['review '+st,renderToString(React.createElement(M.ReviewFlow,{review:off,ctx,answers:{},setAnswers(){},onDecide(){},onUndo(){},undoable(){return false;},onFinish(){},onSnooze(){},onSkip(){},close(){},startStep:st}))]);
+let issues=0;
+pages.forEach(([name,html])=>{ const d=new JSDOM(html).window.document;
+  d.querySelectorAll('button').forEach(b=>{ if(!(b.textContent.trim()||b.getAttribute('aria-label'))){issues++;console.log(name,'Button ohne Namen',b.outerHTML.slice(0,80));} });
+  d.querySelectorAll('input,select,textarea').forEach(i=>{ const lab=i.closest('label')||i.getAttribute('aria-label')||(i.id&&d.querySelector(`label[for="${i.id}"]`)); if(!lab){issues++;console.log(name,'Eingabe ohne Label',i.outerHTML.slice(0,80));} });
+  d.querySelectorAll('img,svg[role="img"]').forEach(g=>{ if(!g.getAttribute('aria-label')&&!g.getAttribute('alt')){issues++;console.log(name,'Grafik ohne Text',g.outerHTML.slice(0,60));} });
+  d.querySelectorAll('table').forEach(t=>{ if(!t.querySelector('th')){issues++;console.log(name,'Tabelle ohne Kopf');} });
+});
+console.log(pages.length+' Ansichten geprüft, '+issues+' Probleme');

@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Coach blockiert drei statt zwei Reviews",
+    "detected": true,
+    "total": 59376,
+    "failures": 30,
+    "first": "Coach-Historie | priorDecisions #5"
+  }
+]

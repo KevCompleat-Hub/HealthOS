@@ -1,0 +1,85 @@
+[
+  {
+    "name": "Tageswechsel: optionale Erfassung wird „verpasst“",
+    "detected": true,
+    "total": 32844,
+    "failures": 30,
+    "first": "Zustand | K0/S2026-10-19 Tag 1 (2026-10-20) state"
+  },
+  {
+    "name": "Empfehlungen: drei statt zwei neue pro Woche",
+    "detected": true,
+    "total": 58176,
+    "failures": 30,
+    "first": "Empfehlungen | recView #0"
+  },
+  {
+    "name": "Check-in-Fenster einen Tag kürzer",
+    "detected": true,
+    "total": 28258,
+    "failures": 31,
+    "first": "Review-Zeitpunkte | K0/S2026-10-19 Tag 0 (2026-10-19) reviewOffer 0"
+  },
+  {
+    "name": "Wochenziel ignoriert pausierte Routinen",
+    "detected": true,
+    "total": 58176,
+    "failures": 30,
+    "first": "Datengrundlage | K0/S2026-10-24 Tag 4 (2026-10-28) coverage"
+  },
+  {
+    "name": "Alle zwei Wochen wird jede Woche",
+    "detected": true,
+    "total": 47819,
+    "failures": 30,
+    "first": "Aktionen | K0/S2026-10-19 Tag 4 (2026-10-23) nach saveNew"
+  },
+  {
+    "name": "Laborwert gilt nur 12 statt 18 Monate",
+    "detected": true,
+    "total": 58176,
+    "failures": 30,
+    "first": "Laborprüfung | zink #0"
+  },
+  {
+    "name": "Zeitzone London statt Berlin",
+    "detected": true,
+    "total": 58176,
+    "failures": 30,
+    "first": "Europe/Berlin | 2025-03-29T00:00:00.000Z"
+  },
+  {
+    "name": "Einzeländerung wird von der Planung überschrieben",
+    "detected": true,
+    "total": 53786,
+    "failures": 23,
+    "first": "Aktionen | K0/S2026-10-24 Tag 4 (2026-10-28) nach editInstance"
+  },
+  {
+    "name": "Training doppelt gezählt",
+    "detected": true,
+    "total": 57785,
+    "failures": 30,
+    "first": "Datengrundlage | K0/S2026-10-19 Tag 0 (2026-10-19) coverage"
+  },
+  {
+    "name": "Pause aufheben stellt Plan nicht wieder her",
+    "detected": true,
+    "total": 55293,
+    "failures": 18,
+    "first": "Aktionen | K0/S2026-12-28 Tag 8 (2027-01-07) nach unpause"
+  },
+  {
+    "name": "Verpasster Check-in wird nicht nacherfasst",
+    "detected": true,
+    "total": 53748,
+    "failures": 21,
+    "first": "Aktionen | K0/S2026-10-25 Tag 12 (2026-11-09) nach review"
+  },
+  {
+    "name": "Coach blockiert drei statt zwei Reviews",
+    "detected": false,
+    "total": 58176,
+    "failures": 0
+  }
+]

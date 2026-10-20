@@ -1,0 +1,15 @@
+/* Ergänzungen für Anmeldung, zweiten Faktor und Einwilligung. Nutzt die Farb-Tokens der Referenz. */
+.gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--bg);color:var(--ink);font-family:var(--font)}
+.gate-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px}
+.gate-card h1{font-family:var(--display);font-size:1.5rem;margin:12px 0 4px}
+.gate-card p{color:var(--muted);line-height:1.5}
+.gate-card label{display:block;font-weight:600;margin:14px 0 6px}
+.gate-card input[type=email],.gate-card input[type=password],.gate-card input[type=text]{width:100%;font:inherit;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.gate-card .gate-btn{width:100%;margin-top:18px;padding:13px;border-radius:14px;border:0;background:var(--primary);color:var(--on-primary);font:inherit;font-weight:600;cursor:pointer}
+.gate-card .gate-btn[disabled]{opacity:.5;cursor:default}
+.gate-card .gate-link{background:none;border:0;color:var(--primary);font:inherit;margin-top:12px;cursor:pointer;padding:6px 0}
+.gate-card .gate-err{color:var(--danger);font-weight:600}
+.gate-card .qr{display:block;width:200px;height:200px;margin:12px auto;background:#fff;border-radius:12px;padding:8px}
+.gate-card .secret{font-family:ui-monospace,monospace;word-break:break-all;font-size:.85rem;background:var(--surface2);padding:8px;border-radius:8px}
+.gate-card .check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-weight:400}
+.gate-card ul{padding-left:20px;color:var(--muted);line-height:1.5}

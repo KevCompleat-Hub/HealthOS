@@ -1,0 +1,122 @@
+{
+  "fromCore": 167,
+  "uiFromReference": 77,
+  "runs": {
+    "referenz": [
+      {
+        "suite": "smoke",
+        "ok": true,
+        "status": 0,
+        "result": "alle Screens rendern",
+        "retried": false
+      },
+      {
+        "suite": "test4",
+        "ok": true,
+        "status": 0,
+        "result": "87 von 87 Tests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "test5",
+        "ok": true,
+        "status": 0,
+        "result": "54 von 54 Review-Tests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "test6",
+        "ok": true,
+        "status": 0,
+        "result": "59 von 59 Korrekturtests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "e2e2",
+        "ok": true,
+        "status": 0,
+        "result": "32 von 32 Klicktests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "e2e3",
+        "ok": true,
+        "status": 0,
+        "result": "39 von 39 Klicktests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "e2e4",
+        "ok": true,
+        "status": 0,
+        "result": "31 von 31 Klicktests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "a11y",
+        "ok": true,
+        "status": 0,
+        "result": "14 Ansichten geprüft, 0 Probleme",
+        "retried": false
+      }
+    ],
+    "ts-kern": [
+      {
+        "suite": "smoke",
+        "ok": true,
+        "status": 0,
+        "result": "alle Screens rendern",
+        "retried": false
+      },
+      {
+        "suite": "test4",
+        "ok": true,
+        "status": 0,
+        "result": "87 von 87 Tests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "test5",
+        "ok": true,
+        "status": 0,
+        "result": "54 von 54 Review-Tests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "test6",
+        "ok": true,
+        "status": 0,
+        "result": "59 von 59 Korrekturtests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "e2e2",
+        "ok": true,
+        "status": 0,
+        "result": "32 von 32 Klicktests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "e2e3",
+        "ok": true,
+        "status": 0,
+        "result": "39 von 39 Klicktests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "e2e4",
+        "ok": true,
+        "status": 0,
+        "result": "31 von 31 Klicktests bestanden",
+        "retried": false
+      },
+      {
+        "suite": "a11y",
+        "ok": true,
+        "status": 0,
+        "result": "14 Ansichten geprüft, 0 Probleme",
+        "retried": false
+      }
+    ]
+  }
+}

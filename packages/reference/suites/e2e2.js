@@ -1,0 +1,116 @@
+const { JSDOM } = require('jsdom');
+const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', { pretendToBeVisual: true });
+global.window = dom.window; global.document = dom.window.document; global.navigator = dom.window.navigator;
+global.HTMLElement = dom.window.HTMLElement; global.Node = dom.window.Node; global.FileReader = dom.window.FileReader;
+window.scrollTo = () => {};
+const React = require('react'); const ReactDOM = require('react-dom/client');
+const M = require('./app.test.js'); const V2 = require('./app.v2.test.js');
+let fails = 0, n = 0; const ok = (c, m) => { n++; if (!c) { fails++; console.log('FAIL', m); } else console.log('ok  ', m); };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const store = new Map();
+const mkDoc = path => ({ id: path.split('/').pop(), path,
+  get: async () => ({ id: path.split('/').pop(), exists: store.has(path), data: () => store.has(path) ? JSON.parse(JSON.stringify(store.get(path))) : undefined, metadata: {} }),
+  set: async d => { store.set(path, JSON.parse(JSON.stringify(d))); }, delete: async () => { store.delete(path); }, collection: sub => mkCol(path + '/' + sub) });
+const mkCol = path => ({ path, doc: id => mkDoc(path + '/' + id), get: async () => { const docs = [...store.keys()].filter(k => k.startsWith(path + '/') && !k.slice(path.length + 1).includes('/')).map(k => ({ id: k.split('/').pop(), exists: true, data: () => JSON.parse(JSON.stringify(store.get(k))) })); return { docs, size: docs.length, empty: !docs.length }; } });
+const db = { doc: mkDoc, collection: mkCol };
+const claudeMock = { use: async x => x === 'db' ? db : x === 'user' ? { id: async () => 'u_test' } : null };
+const $$ = sel => [...document.querySelectorAll(sel)];
+const byText = (txt, sel = 'button') => $$(sel).find(b => b.textContent.trim() === txt);
+const byStart = (txt, sel = 'button') => $$(sel).find(b => b.textContent.trim().startsWith(txt));
+const click = async el => { if (!el) throw new Error('Element fehlt'); el.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await sleep(40); };
+const typeInto = async (el, v) => { const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(el, v); el.dispatchEvent(new window.Event('input', { bubbles: true })); await sleep(20); };
+let root;
+const mount = async (props = {}) => { if (root) root.unmount(); document.body.innerHTML = '<div id="root"></div>'; root = ReactDOM.createRoot(document.getElementById('root')); root.render(React.createElement(M.App, props)); await sleep(350); };
+const B = 'data/users/u_test/';
+(async () => {
+  console.log('# Tageswechsel in offener Sitzung');
+  window.claude = undefined;
+  let nowISO = '2026-10-14T08:00:00Z'; // Mittwoch 10:00 Berlin
+  await mount({ initialStore: { status: 'none' }, initialConfig: { ...M.DEFAULT_CONFIG, onboardingDone: true }, getNow: () => new Date(nowISO) });
+  const nextTitles = () => $$('section[aria-labelledby="next-h"] .row-title').map(e => e.textContent);
+  ok(nextTitles().includes('Bewegungspause'), 'Mittwoch 10:00: Bewegungspause unter Als Nächstes');
+  nowISO = '2026-10-14T21:59:00Z'; document.dispatchEvent(new window.Event('visibilitychange')); await sleep(60);
+  ok(document.querySelector('.h-date').textContent.includes('14. Oktober'), '23:59: noch Mittwoch');
+  nowISO = '2026-10-15T07:00:00Z'; document.dispatchEvent(new window.Event('visibilitychange')); await sleep(80);
+  ok(document.querySelector('.h-date').textContent.includes('15. Oktober'), 'Rückkehr aus dem Hintergrund am Donnerstag 09:00: Datum gewechselt');
+  ok(!$$('section[aria-labelledby="next-h"] .row-meta').some(e => e.textContent.includes('Mi,')), 'keine Mittwochsaufgabe unter Als Nächstes');
+  ok(!$$('.hint-row').some(h => h.textContent.includes('Bewegungspause')), 'keine Hinweise zur verpassten Pause');
+  await click(byText('Woche', 'nav button')); await click($$('.day').find(d => d.textContent.startsWith('Mi')));
+  ok($$('.row.st-verpasst').some(r => r.textContent.includes('Bewegungspause') && r.textContent.includes('Verpasst')), 'Woche: Mittwoch zeigt die Pause als „Verpasst“');
+  nowISO = '2026-10-18T22:30:00Z'; window.dispatchEvent(new window.Event('focus')); await sleep(80);
+  ok(document.querySelector('.week-title').textContent.includes('KW'), 'Sonntag auf Montag per Fokus verarbeitet');
+  await click(byText('Heute', 'nav button'));
+  ok(document.querySelector('.h-date').textContent.includes('19. Oktober') && !$$('section[aria-labelledby="next-h"] .row-meta').some(e => /Di,|Mi,|Do,|Fr,|Sa,|So,/.test(e.textContent) && !e.textContent.includes('Frist')), 'Montag: kein Rückstand aus der Vorwoche');
+
+  console.log('\n# Fokus nach dem Schließen eines Sheets');
+  const opener = $$('section[aria-labelledby="next-h"] .row-main')[0]; opener.focus(); await click(opener);
+  ok(!!document.querySelector('.sheet'), 'Sheet geöffnet');
+  window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' })); await sleep(60);
+  ok(!document.querySelector('.sheet') && document.activeElement && document.activeElement.textContent === opener.textContent, 'Fokus kehrt zum auslösenden Element zurück');
+
+  console.log('\n# Termin nur dienstags später (über die Oberfläche)');
+  await click(byText('Woche', 'nav button')); await click($$('.day').find(d => d.textContent.startsWith('Di')));
+  await click($$('.row-main').find(b => b.textContent.startsWith('Bewegungspause')));
+  await click(byStart('Uhrzeit oder Dauer ändern'));
+  await click($$('.radio input')[2]);
+  await typeInto(document.querySelector('.sheet input[type=time]'), '14:00');
+  ok(document.querySelector('.preview-sum') && /geändert/.test(document.querySelector('.preview-sum').textContent), 'Vorschau zeigt betroffene Termine: ' + document.querySelector('.preview-sum').textContent);
+  await click(byText('Änderung übernehmen'));
+  ok($$('.row').some(r => r.textContent.includes('Bewegungspause') && r.textContent.includes('14:00')), 'Dienstag jetzt 14:00');
+  await click($$('.day').find(d => d.textContent.startsWith('Mo')));
+  ok($$('.row').some(r => r.textContent.includes('Bewegungspause') && r.textContent.includes('12:30')), 'Montag unverändert 12:30');
+
+  console.log('\n# Migration aus dem gespeicherten Stand von Version 1');
+  const WED = '2026-10-14';
+  const v2s = V2.seed(WED, V2.DEFAULT_CONFIG); const v2p = V2.A.addPause(v2s, { reason: 'Krankheit', from: WED, to: '2026-10-30', scope: 'alle' }, WED);
+  const docs = V2.snapshotDocs(V2.normalizeConfig({ ...V2.DEFAULT_CONFIG, onboardingDone: true }), v2p, 'dark');
+  store.clear(); store.set(B + 'settings', docs.settings); store.set(B + 'habits', docs.habits);
+  Object.keys(docs).filter(k => k.startsWith('week:')).forEach(k => store.set(B + 'settings/weeks/' + k.slice(5), docs[k]));
+  const v1count = Object.keys(docs).filter(k => k.startsWith('week:')).reduce((s, k) => s + docs[k].items.length, 0);
+  window.claude = claudeMock; nowISO = '2026-10-15T07:00:00Z';
+  await mount({ getNow: () => new Date(nowISO) }); await sleep(1300);
+  ok(!document.querySelector('.ob'), 'gespeicherter Stand geladen, keine erneute Einrichtung');
+  ok(store.get(B + 'settings').schema === 2 && store.has(B + 'plan') && store.get(B + 'plan').routines.length > 0, 'Speicher auf Version 2 migriert, Routinen gespeichert');
+  ok(!JSON.stringify(store.get(B + 'habits')).includes('Krankheit') && store.get(B + 'habits').pauses[0].kind === 'auszeit', 'Pausengrund „Krankheit“ aus dem Speicher entfernt');
+  const all = () => [...store.keys()].filter(k => k.includes('/weeks/')).flatMap(k => store.get(k).items);
+  ok(all().length >= v1count && new Set(all().map(i => i.id)).size === all().length, `alle ${v1count} alten Einträge erhalten, keine Duplikate (${all().length} gespeichert)`);
+  await click(document.querySelector('[aria-label="Einstellungen"]'));
+  ok(document.body.textContent.includes('von Version 1 auf Version 2'), 'Einstellungen zeigen die durchgeführte Migration');
+
+  console.log('\n# Neuer Start mit Einrichtung');
+  await click(byText('Gespeicherte Daten löschen')); await click(byText('Endgültig löschen')); await sleep(300);
+  ok(store.size === 0 && !!document.querySelector('.ob'), 'Daten gelöscht, Einrichtung startet');
+  ok(!document.body.textContent.includes('Alter') && document.querySelector('.ob-title').textContent.includes('erreichen'), 'erster Schritt sind die Ziele, keine Frage nach dem Alter');
+  await click(byText('Gesundheitswerte verbessern')); await click(byText('Weiter'));
+  for (let k = 0; k < 3; k++) await click(byText('Weiter'));
+  await click(byText('Gewicht tracken', 'span'));
+  ok(!!$$('.ob label').find(l => l.textContent.includes('Aktuelles Gewicht')), 'Gewichtsfeld erscheint erst mit aktivem Gewichtstracking');
+  await typeInto($$('.ob input').find(i => i.placeholder === 'z. B. 84,6'), '20'); await click(byText('Weiter'));
+  ok(!!document.querySelector('.ob .err'), 'unplausibles Gewicht wird gemeldet');
+  await typeInto($$('.ob input').find(i => i.placeholder === 'z. B. 84,6'), ''); await click(byText('Weiter'));
+  await click(byText('Weiter')); await click(byText('Plan übernehmen')); await sleep(1200);
+  ok(store.has(B + 'plan') && store.get(B + 'settings').config.goals.includes('werte'), 'Plan und Ziele gespeichert');
+
+  console.log('\n# Empfehlung annehmen');
+  await click(byText('Gesundheit', 'nav button'));
+  const cards = $$('.rec'); ok(cards.length >= 1 && cards.length <= 2, `höchstens zwei neue Empfehlungen sichtbar (${cards.length})`);
+  ok(cards.every(c => c.textContent.includes('belegt') || c.textContent.includes('Unklar')), 'jede Karte zeigt die Evidenzeinordnung');
+  const take = $$('.rec button').find(b => /übernehmen/.test(b.textContent)); await click(take); await sleep(1200);
+  ok(!!document.querySelector('.toast') , 'Rückmeldung nach dem Übernehmen: ' + document.querySelector('.toast').textContent);
+  const plan = store.get(B + 'plan');
+  ok(!Object.keys(plan.recState).some(k => ['ldl-muster', 'zink-lebensmittel'].includes(k)), 'laborbezogene Entscheidungen nicht im Speicher');
+  ok(!JSON.stringify([...store.values()]).match(/LDL|Zink|labs|weights/), 'keine Labor- oder Messwerte im Speicher');
+  await click(byText('Werte', 'button') || byText('Blutwerte'));
+  await click($$('.lab-head').find(b => b.textContent.startsWith('Vitamin D')));
+  ok(document.body.textContent.includes('keine Alltagsempfehlung hinterlegt') || document.body.textContent.includes('innerhalb der Laborreferenz'), 'Vitamin D: keine erfundene Empfehlung');
+  await click($$('.lab-head').find(b => b.textContent.startsWith('Zink')));
+  ok(document.body.textContent.includes('Was kann ich im Alltag beeinflussen?') && document.body.textContent.includes('keine Dosierung'), 'Zink: Alltagsabschnitt ohne Dosierung');
+
+  console.log('\n# Ohne Speicher');
+  window.claude = undefined; await mount({}); await sleep(100);
+  ok(!!document.querySelector('.ob'), 'ohne Speicher startet die Einrichtung trotzdem');
+  await click(byText('Später einrichten')); await click(document.querySelector('[aria-label="Einstellungen"]'));
+  ok(document.body.textContent.includes('kein persönlicher Speicher verfügbar'), 'Einstellungen erklären den fehlenden Speicher');
+  console.log(`\n${n - fails} von ${n} Klicktests bestanden${fails ? `, ${fails} FEHLER` : ''}`);
+  process.exit(0);
+})().catch(e => { console.log('ABBRUCH', e); process.exit(1); });

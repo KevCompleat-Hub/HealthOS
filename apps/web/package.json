@@ -1,0 +1,29 @@
+{
+  "name": "@healthos/web",
+  "version": "0.2.0-w3",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/run-all.mjs"
+  },
+  "dependencies": {
+    "@fontsource/figtree": "5.3.0",
+    "@fontsource/schibsted-grotesk": "5.3.0",
+    "@healthos/domain": "workspace:*",
+    "@supabase/supabase-js": "2.117.2",
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "24.1.3",
+    "esbuild": "0.21.5",
+    "typescript": "5.6.3"
+  }
+}
