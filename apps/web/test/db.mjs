@@ -19,8 +19,7 @@ try {
   // Ausgangszustand herstellen: eigene Daten und Einwilligungen der Testkonten entfernen (Löschen ist ohne Einwilligung erlaubt)
   for (const [cl, id] of [[a2, A], [b2, B]]) { await cl.from('app_documents').delete().eq('user_id', id); await cl.from('beta_consents').delete().eq('user_id', id); }
   ok(await fails(supabaseBackend(a2, A).put('settings', { schema: 2 })), 'ohne Einwilligung wird nichts gespeichert');
-  ok((await a1.from('beta_consents').insert({ user_id: A, version: 'beta-1' })).error != null, 'Einwilligung erst nach zweitem Faktor');
-  ok((await a2.from('beta_consents').insert({ user_id: A, version: 'beta-1' })).error == null, 'Einwilligung mit zweitem Faktor gespeichert');
+  ok((await a1.from('beta_consents').insert({ user_id: A, version: 'beta-1' })).error == null, 'Einwilligung mit E-Mail und Passwort gespeichert');
   const be = supabaseBackend(a2, A);
   await be.put('settings', { schema: 2, config: { onboardingDone: true } });
   await be.put('plan', { schema: 2, routines: [] });
@@ -32,7 +31,7 @@ try {
   ok(loaded && loaded.weeks[0].id === '2026-10-19' && loaded.weeks[0].items[0].status === 'erledigt', 'Store lädt den Wochenplan wie die Referenz');
   ok(await fails(be.put('labs', {})), 'unbekannter Dokumentschlüssel wird in der App abgewiesen');
   ok((await a2.from('app_documents').upsert({ user_id: A, doc_key: 'activity', body: { weights: [] } })).error != null, 'Gewicht wird von der Datenbank abgewiesen');
-  ok((await supabaseBackend(a1, A).getAll()).length === 0, 'mit nur einem Faktor unsichtbar');
+  ok((await supabaseBackend(a1, A).getAll()).length === 3, 'Anmeldung ohne zweiten Faktor sieht die eigenen Dokumente');
   await b2.from('beta_consents').insert({ user_id: B, version: 'beta-1' });
   const beB = supabaseBackend(b2, B);
   ok((await beB.getAll()).length === 0, 'anderer Nutzer sieht keine fremden Dokumente');
