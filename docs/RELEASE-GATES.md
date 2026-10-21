@@ -42,3 +42,11 @@ Zusätzlich gefunden und behoben: Testnachricht für Push scheiterte im Browser 
 ## Freigabeempfehlung
 
 **Keine Freigabe für weitere Tester mit echten Daten.** Technische Sperren aus dem Audit sind weitgehend geschlossen. Es bleiben die Gates 1, 3 und 8 sowie das Wiederherstellen einer Sicherung. Gate 1 kann nur eine rechtliche Prüfung schließen. Für dich allein als Entwickler mit eigenen Daten ist der Stand nutzbar.
+
+## Ergänzung 0.13.0-w15 (Rebranding)
+
+| Punkt | Stand |
+| --- | --- |
+| Markenrecht „EvoVive“ (Register, Domain, Verwechslungsgefahr) | **offen**, nicht geprüft |
+| Rechtstexte mit neuem Namen | Name ersetzt, Platzhalter für Verantwortlichen weiterhin offen |
+| Einwilligungen nach Namenswechsel | keine Neueinholung vorgesehen (gleicher Verantwortlicher, gleiche Zwecke), rechtlich bestätigen lassen |

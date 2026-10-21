@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 125, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 127, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -20,7 +20,7 @@ import { CheckinCard, ContextInsights } from '../beta/checkin';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
-/* HealthOS – Demo-Prototyp. Alle Daten sind fiktiv und liegen nur im Arbeitsspeicher. */
+/* EvoVive – Demo-Prototyp. Alle Daten sind fiktiv und liegen nur im Arbeitsspeicher. */
 /* ---------------- Datum & Format ---------------- */
 /* Lokales Datum und Uhrzeit immer in Europe/Berlin, unabhängig von der Gerätezeitzone */
 /* ---------------- Stammdaten der Demo ---------------- */
@@ -766,7 +766,7 @@ function Development({ ctx }) {
         <p>{ms.total ? `${ms.total} ${ms.total === 1 ? 'Eintrag' : 'Einträge'} (${[ms.training && `${ms.training} Training`, ms.bewegung && `${ms.bewegung} Bewegung`, ms.sonst && `${ms.sonst} Sonstiges`].filter(Boolean).join(', ')}). Das wird nicht nachgeholt. Wenn sich etwas wiederholt, lohnt sich ein anderer Zeitpunkt.` : 'Nichts verpasst bisher.'} {ps.skipped ? `${ps.skipped} bewusst ausgelassen.` : ''}</p>
         <h3 className="h3">Angenommene Maßnahmen</h3>
         <AcceptedMeasures ctx={ctx} />
-        <details className="b-more-info"><summary>Mehr dazu</summary><p className="hint">Zur Reflexion: Was hat geholfen, was war schwierig? HealthOS behauptet keinen Zusammenhang zwischen einzelnen Maßnahmen und einzelnen Messwerten.</p></details>
+        <details className="b-more-info"><summary>Mehr dazu</summary><p className="hint">Zur Reflexion: Was hat geholfen, was war schwierig? EvoVive behauptet keinen Zusammenhang zwischen einzelnen Maßnahmen und einzelnen Messwerten.</p></details>
         <h3 className="h3">Vorschläge für nächste Woche</h3>
         <ul className="plain">{suggestions.map(s => <li key={s}>{s}</li>)}</ul>
         <p className="hint">Der Rückblick folgt festen Regeln aus deinen Einträgen. Er ist keine medizinische Bewertung.</p>
@@ -779,7 +779,7 @@ function Development({ ctx }) {
         <div className="goal"><div className="goal-head"><span>{goal ? `${goal} Trainingseinheiten pro Woche` : 'Training, kein Wochenziel'}</span><b>{goal ? `${tw} von ${goal}` : tw}</b></div><Progress value={tw} max={goal || 1} label="Trainingsziel" /></div>
         <div className="goal"><div className="goal-head"><span>Bewegungspause an Werktagen</span><b>{ps.done} von {ps.eligible}</b></div><Progress value={ps.done} max={ps.eligible} label="Bewegungspausen" /></div>
         <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${hs.done} von ${hs.eligible}` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
-        {BETA.weight && <p className="hint">{BETA.capture.includes('mahlzeit') ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. HealthOS legt keine Zielwerte automatisch fest."}</p>}
+        {BETA.weight && <p className="hint">{BETA.capture.includes('mahlzeit') ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, EvoVive legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. EvoVive legt keine Zielwerte automatisch fest."}</p>}
       </div>
     </section>
 
@@ -865,7 +865,7 @@ function RecSheet({ id, ctx, close }) {
         <dt>Häufigkeit</dt><dd>{rec.frequency}</dd>
         <dt>Sicherheit</dt><dd>{rec.safety_notes}</dd>
         <dt>Wann nicht oder nur nach Rücksprache</dt><dd>{rec.contraindications}</dd>
-        <dt>Evidenz</dt><dd>{EVIDENCE_LEVELS[rec.evidence_strength][0]}: {EVIDENCE_LEVELS[rec.evidence_strength][1]} Die Einordnung stammt aus dem HealthOS-Regelwerk auf Basis der Quellen, sie ist keine offizielle Evidenzstufe der Quelle.</dd>
+        <dt>Evidenz</dt><dd>{EVIDENCE_LEVELS[rec.evidence_strength][0]}: {EVIDENCE_LEVELS[rec.evidence_strength][1]} Die Einordnung stammt aus dem EvoVive-Regelwerk auf Basis der Quellen, sie ist keine offizielle Evidenzstufe der Quelle.</dd>
         <dt>Quellen</dt><dd><ul className="plain">{recSourceList(rec).map(s => <li key={s.url}><a className="ext" href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a><br /><small>{s.publisher}, {s.date}. {s.note}</small></li>)}</ul></dd>
         {rec.reviewDate && <><dt>Überprüfen am</dt><dd>{fmtDM(rec.reviewDate)}{yy(rec.reviewDate)}</dd></>}
       </dl>
@@ -888,7 +888,7 @@ function RecsList({ ctx }) {
     <p className="demo-note"><Icon name="info" size={16} /> Regelbasierte Vorschläge aus deinen Zielen, deinem Arbeitsalltag und fiktiven Demo-Laborwerten. Keine Diagnose, keine KI, keine Präparate-Empfehlungen.</p>
     {rv.ready.length ? <div className="recs">{rv.ready.map(r => <RecCard key={r.id} rec={r} ctx={ctx} />)}</div>
       : <Empty text={rv.all.length ? 'Gerade gibt es keinen neuen Vorschlag.' : 'Für deine Ziele gibt es aktuell keine hinterlegte Empfehlung.'} />}
-    {rv.waiting > 0 && <p className="hint">{rv.waiting} weitere {rv.waiting === 1 ? 'Empfehlung folgt' : 'Empfehlungen folgen'} in den nächsten Wochen. HealthOS zeigt höchstens zwei neue pro Woche.</p>}
+    {rv.waiting > 0 && <p className="hint">{rv.waiting} weitere {rv.waiting === 1 ? 'Empfehlung folgt' : 'Empfehlungen folgen'} in den nächsten Wochen. EvoVive zeigt höchstens zwei neue pro Woche.</p>}
     {snoozed.length > 0 && <><h3 className="h3">Später</h3><ul className="list">{snoozed.map(r => <li key={r.id} className="row compact"><button className="row-main" onClick={() => openSheet({ kind: 'rec', id: r.id })}><span className="row-title">{r.title}</span><span className="row-meta"><span>wieder ab {fmtDM(r.remindAfter)}</span></span></button></li>)}</ul></>}
     {decided.length > 0 && <details className="fold small"><summary>Entschieden ({decided.length})</summary>
       <ul className="list">{decided.map(r => <li key={r.id} className="row compact"><button className="row-main" onClick={() => openSheet({ kind: 'rec', id: r.id })}><span className="row-title">{r.title}</span><span className="row-meta"><span>{REC_STATUS[r.status]}</span>{r.decidedAt && <span>am {fmtDM(r.decidedAt)}</span>}</span></button></li>)}</ul>
@@ -901,7 +901,7 @@ function RecsList({ ctx }) {
 function LabInfluence({ g, ctx }) {
   const { data, cfg, today } = ctx;
   const m = markerOf(g.name);
-  if (!m) return <p className="hint">Für diesen Wert ist in HealthOS keine Alltagsempfehlung hinterlegt. Dafür gibt es hier keine belastbare direkte Empfehlung, bitte ärztlich einordnen lassen.</p>;
+  if (!m) return <p className="hint">Für diesen Wert ist in EvoVive keine Alltagsempfehlung hinterlegt. Dafür gibt es hier keine belastbare direkte Empfehlung, bitte ärztlich einordnen lassen.</p>;
   const a = labAssessment(data.labs, m, today);
   if (a.state === 'unklar') return <p className="callout">Keine Empfehlung: {a.reason}</p>;
   if (a.state === 'unauffaellig') return <p className="hint">Der letzte Wert liegt innerhalb der Laborreferenz. Keine spezifische Empfehlung.</p>;
@@ -993,7 +993,7 @@ function ChangePreview({ diff, conflicts, empty, all }) {
     <p className="preview-sum">{diff.added + diff.changed + diff.removed ? `Betroffen ab heute: ${diff.added} neu, ${diff.changed} geändert, ${diff.removed} entfallen.` : (empty || 'Keine zukünftigen Termine betroffen.')}</p>
     {list.length > 0 && <ul className="preview-list">{list.map((c, i) => <li key={i}><span className={`tag ${c.kind === 'entfällt' ? 'tag-muted' : c.kind === 'neu' ? '' : 'tag-note'}`}>{c.kind}</span> {WD[wdIdx(c.it.date)]}, {fmtDM(c.it.date)}: {c.it.title}{c.it.time ? `, ${c.kind === 'geändert' && c.old.time !== c.it.time ? `${c.old.time} → ` : ''}${c.it.time} Uhr` : ''}</li>)}{diff.changes.length > list.length && <li className="muted">und {diff.changes.length - list.length} weitere</li>}</ul>}
     <p className="hint top0">Erledigte, ausgelassene, verpasste, verschobene und einzeln geänderte Termine bleiben unverändert.</p>
-    {conflicts && conflicts.length > 0 && <div className="callout warn"><b>Überschneidungen, bitte prüfen:</b><ul className="plain">{conflicts.slice(0, 4).map(c => <li key={c}>{c}</li>)}</ul>HealthOS verschiebt nichts automatisch.</div>}
+    {conflicts && conflicts.length > 0 && <div className="callout warn"><b>Überschneidungen, bitte prüfen:</b><ul className="plain">{conflicts.slice(0, 4).map(c => <li key={c}>{c}</li>)}</ul>EvoVive verschiebt nichts automatisch.</div>}
   </div>;
 }
 function ItemSheet({ id, ctx, close }) {
@@ -1145,7 +1145,7 @@ function PauseSheet({ ctx, close, from: from0 }) {
   </Sheet>;
 }
 function InfoSheet({ close, onSettings }) {
-  return <Sheet title={BETA.demoData ? "Über diese Demo" : "Über HealthOS Beta"} close={close}>
+  return <Sheet title={BETA.demoData ? "Über diese Demo" : "Über EvoVive Beta"} close={close}>
     <div className="form">
       <h3 className="h3">Was funktioniert</h3>
       <p className="hint">{BETA.demoData ? "Einrichtung, automatischer Wochenplan, Routinen mit Versionen und Ausnahmen, Abhaken, Verschieben, Ersatz in derselben Woche, Pausen, Erfassen von Gewicht, Schritten, Training und Mahlzeiten, Laborwerte, Termine und regelbasierte Empfehlungen mit Quellen." : BETA.info.works}</p>
@@ -1156,7 +1156,7 @@ function InfoSheet({ close, onSettings }) {
       {!BETA.demoData && <ul className="b-status">{BETA.status.map(([f, st]) => <li key={f}><span>{f}</span><b>{st}</b></li>)}</ul>}
       {!BETA.demoData && <><h3 className="h3">Begriffe</h3><dl className="b-terms">{BETA.terms.map(([t, d]) => <div key={t}><dt>{t}</dt><dd>{d}</dd></div>)}</dl></>}
       <p className="hint">Version {APP_VERSION}</p>
-      {!BETA.demoData && <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>}
+      {!BETA.demoData && <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=EvoVive%20Beta%20Feedback`}>Feedback senden</a>}</p>}
       <button className="btn wide" onClick={() => { close(); onSettings(); }}>Zu den Einstellungen</button>
     </div>
   </Sheet>;
@@ -1658,7 +1658,7 @@ function StepGoals({ cfg, setCfg }) {
         <button className="icon-btn sm" aria-label={`${GOALS[g]} weniger wichtig`} disabled={i === cfg.goals.length - 1} onClick={() => move(i, 1)}><Icon name="down" size={18} /></button>
       </li>)}</ol>
     </>}
-    <p className="hint">{cfg.goals.length ? 'Priorität 1 bestimmt, worauf sich der Hinweis auf „Heute“ konzentriert, und welche Gewohnheiten vorgeschlagen werden.' : 'Ohne Auswahl plant HealthOS ausgewogen mit Bewegung und Training.'}</p>
+    <p className="hint">{cfg.goals.length ? 'Priorität 1 bestimmt, worauf sich der Hinweis auf „Heute“ konzentriert, und welche Gewohnheiten vorgeschlagen werden.' : 'Ohne Auswahl plant EvoVive ausgewogen mit Bewegung und Training.'}</p>
   </>;
 }
 function StepWork({ cfg, setCfg }) {
@@ -1676,7 +1676,7 @@ function StepWork({ cfg, setCfg }) {
         <Field label="Dauer"><select className="input" value={w.lunchDur} onChange={ev => set('lunchDur')(Number(ev.target.value))}>{[15, 30, 45, 60].map(m => <option key={m} value={m}>{m} Min.</option>)}</select></Field>
       </div>
       {!err && l != null && (l < s || l > e) && <p className="hint">Die Mittagspause liegt außerhalb der Arbeitszeit. Das ist möglich, bitte kurz prüfen.</p>}
-    </> : <p className="hint">Ohne Arbeitstage plant HealthOS keine Bewegungspausen. Training liegt dann zu den Zeiten fürs Wochenende.</p>}
+    </> : <p className="hint">Ohne Arbeitstage plant EvoVive keine Bewegungspausen. Training liegt dann zu den Zeiten fürs Wochenende.</p>}
     {err && <p className="err" role="alert">{err}</p>}
   </>;
 }
@@ -1730,7 +1730,7 @@ function StepReminders({ cfg, setCfg }) {
       <Field label="Ruhezeit bis"><input className="input" type="time" value={r.quietTo} onChange={e => set('quietTo')(e.target.value)} /></Field>
     </div>
     <Field label="Vorlauf für Erinnerungen"><Chips options={[[0, 'Zur Zeit'], [10, '10 Min.'], [15, '15 Min.'], [30, '30 Min.']]} value={r.lead} onChange={set('lead')} /></Field>
-    <p className="hint">In der Ruhezeit plant HealthOS nichts ein. Push-Benachrichtigungen gibt es noch nicht, Hinweise erscheinen nur in der App. Der Vorlauf wird gespeichert und greift, sobald Push verfügbar ist.</p>
+    <p className="hint">In der Ruhezeit plant EvoVive nichts ein. Push-Benachrichtigungen gibt es noch nicht, Hinweise erscheinen nur in der App. Der Vorlauf wird gespeichert und greift, sobald Push verfügbar ist.</p>
   </>;
 }
 function PlanPreview({ cfg }) {
@@ -1763,7 +1763,7 @@ const OB_STEPS = [
   ['pausen', 'Bewegung während der Arbeit', 'Kurze Pausen, die realistisch in den Alltag passen.'],
   ['training', 'Training', 'Wo, wie oft und wann du trainieren möchtest.'],
   ['ernaehrung', 'Ernährung und Tracking', 'Was du festhalten möchtest. Alles optional.'],
-  ['erinnerungen', 'Hinweise und Motivation', 'Wie deutlich HealthOS dich erinnern soll.'],
+  ['erinnerungen', 'Hinweise und Motivation', 'Wie deutlich EvoVive dich erinnern soll.'],
   ['plan', 'Dein Wochenplan', 'Prüfe den Vorschlag. Termine haben eine Uhrzeit, Gewohnheiten nicht. Pausen, Gewicht und Erinnerungen stellst du später in den Einstellungen ein. In der Beta gibt es keine Mahlzeitenerfassung.'],
 ].filter(([k]) => !BETA.obSkip.includes(k));
 function StepContent({ k, cfg, setCfg, body, setBody, onTouch }) {
@@ -1851,7 +1851,7 @@ function Settings({ ctx, cfg, applyConfig, store, theme, setTheme, onExport, onI
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return setImp({ error: 'Die Datei ist größer als 5 MB.' });
     const fr = new FileReader();
-    fr.onload = () => { try { setImp(parseImport(JSON.parse(String(fr.result)))); } catch (x) { setImp({ error: 'Die Datei ist kein gültiges JSON.' }); } };
+    fr.onload = () => { try { setImp((r => (r && r.error ? { ...r, error: r.error.replace('EvoVive', 'EvoVive') } : r))(parseImport(JSON.parse(String(fr.result))))); } catch (x) { setImp({ error: 'Die Datei ist kein gültiges JSON.' }); } };
     fr.onerror = () => setImp({ error: 'Die Datei konnte nicht gelesen werden.' });
     fr.readAsText(file);
   };
@@ -1918,7 +1918,7 @@ function Settings({ ctx, cfg, applyConfig, store, theme, setTheme, onExport, onI
       <div className="panel">
         <p className="hint top0">Angemeldet als {ctx.account.email}.</p>
         <div className="btn-row"><button className="btn small" onClick={ctx.account.signOut}>Abmelden</button></div>
-        <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>
+        <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=EvoVive%20Beta%20Feedback`}>Feedback senden</a>}</p>
         <AccountExtras ctx={ctx} />
       </div>
     </section>}
@@ -2139,10 +2139,10 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
   const activeTab = TAB_OF[tab] !== undefined ? TAB_OF[tab] : tab;
   return <div className="app">
     <div className="topbar">
-      <span className="brand"><span className="brand-mark" aria-hidden="true" /><span className="brand-text">HealthOS</span></span>
+      <span className="brand"><span className="brand-mark" aria-hidden="true" /><span className="brand-text">Evo<b>Vive</b></span></span>
       <span className="demo-pill">{BETA.pill}</span>
       <button className={`icon-btn ${tab === 'einstellungen' ? 'on' : ''}`} aria-label="Einstellungen" onClick={() => go('einstellungen')}><Icon name="gear" /></button>
-      <button className="icon-btn" aria-label="Über HealthOS" onClick={() => setSheet({ kind: 'info' })}><Icon name="info" /></button>
+      <button className="icon-btn" aria-label="Über EvoVive" onClick={() => setSheet({ kind: 'info' })}><Icon name="info" /></button>
     </div>
     {!online && <p className="callout warn offline" role="status">Keine Verbindung. Du kannst weiterarbeiten, gespeichert wird erst wieder mit Verbindung.</p>}
     <main id="main">
@@ -2170,7 +2170,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
     {sheet && sheet.kind === 'info' && <InfoSheet close={close} onSettings={() => go('einstellungen')} />}
     {review && <ReviewFlow key={review.key + (review.mode || '')} review={review} ctx={ctx} answers={answers[review.key] || {}} setAnswers={a => setAnswers(s => ({ ...s, [review.key]: a }))} onDecide={decideMeasure} onUndo={undoMeasure} undoable={undoable} onFinish={finishReview} onSnooze={() => snoozeReview(review)} onSkip={() => skipReview(review)} close={() => setReview(null)} />}
     {showOb && store.status !== 'pending' && <Onboarding initial={cfg} initialBody={body} onDone={finishOnboarding} onLater={later} />}
-    {store.status === 'pending' && !initialStore && <div className="splash" role="status"><span className="brand-mark big" aria-hidden="true" /><span>HealthOS wird geladen</span></div>}
+    {store.status === 'pending' && !initialStore && <div className="splash" role="status"><span className="brand-mark big" aria-hidden="true" /><span>EvoVive wird geladen</span></div>}
   </div>;
 }
 

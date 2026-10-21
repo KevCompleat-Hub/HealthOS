@@ -83,7 +83,7 @@ export function ScaleImport({ ctx, post = (body, token) => fetch('/api/waage', {
   return <section className="panel b-scale" aria-labelledby="scale-h">
     <h3 className="h3 top0" id="scale-h">Screenshot der Waage auslesen</h3>
     {consent === false ? <>
-      <p className="hint top0">Das Bild wird zur Auswertung an den KI-Dienst Anthropic (Claude) übertragen. HealthOS speichert das Bild nicht. Gespeichert werden nur die Werte, die du danach bestätigst. Wie Anthropic Anfragen verarbeitet, regeln dessen Bedingungen.</p>
+      <p className="hint top0">Das Bild wird zur Auswertung an den KI-Dienst Anthropic (Claude) übertragen. EvoVive speichert das Bild nicht. Gespeichert werden nur die Werte, die du danach bestätigst. Wie Anthropic Anfragen verarbeitet, regeln dessen Bedingungen.</p>
       <button className="btn small" onClick={giveConsent}>Einwilligen und fortfahren</button>
     </> : consent === null ? <p className="hint top0">Wird geladen …</p> : <>
       <p className="hint top0">Screenshot aus deiner Waagen-App wählen. Erkannt werden Gewicht, Körperfett, Muskelmasse und Körperwasser.</p>

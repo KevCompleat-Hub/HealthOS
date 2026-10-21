@@ -52,7 +52,7 @@ export function dueReminders(docs: UserDocs, now: Date, windowMin = 15): Reminde
     const t = toMin(it.time); if (t == null) continue;
     const at = Math.max(0, t - lead);
     if (at < min || at >= min + windowMin || inQuiet(at, r.quietFrom, r.quietTo)) continue;
-    out.push({ key: `${date}|${it.id}`, title: 'HealthOS', body: (TEXT[it.type] || (x => `${x.title} um ${x.time} Uhr.`))(it), url: '/' });
+    out.push({ key: `${date}|${it.id}`, title: 'EvoVive', body: (TEXT[it.type] || (x => `${x.title} um ${x.time} Uhr.`))(it), url: '/' });
   }
   if (intensity !== 'sanft' && !paused && min <= 20 * 60 && 20 * 60 < min + windowMin && !inQuiet(20 * 60, r.quietFrom, r.quietTo)) {
     const hs = (docs.habits?.habits || []).filter(h => h.active !== false && h.kind !== 'limit' && !(h.inactiveFrom && date >= h.inactiveFrom));
@@ -60,7 +60,7 @@ export function dueReminders(docs: UserDocs, now: Date, windowMin = 15): Reminde
     const open = hs.filter(h => !log[`${h.id}|${date}`]).filter(h => {
       if (!h.perWeek) return true; let n = 0; for (let x = weekStart(date); x < date; x = addDays(x, 1)) if (log[`${h.id}|${x}`] === 'done') n++; return n < h.perWeek;
     }).length;
-    if (open > 0) out.push({ key: `${date}|habits`, title: 'HealthOS', body: open === 1 ? 'Eine Gewohnheit ist heute noch offen. Ein Haken geht immer.' : `${open} Gewohnheiten sind heute noch offen. Ein Haken geht immer.`, url: '/' });
+    if (open > 0) out.push({ key: `${date}|habits`, title: 'EvoVive', body: open === 1 ? 'Eine Gewohnheit ist heute noch offen. Ein Haken geht immer.' : `${open} Gewohnheiten sind heute noch offen. Ein Haken geht immer.`, url: '/' });
   }
   return out;
 }

@@ -72,7 +72,7 @@ export function CheckinCard({ ctx }) {
     <p className="b-next-kicker" id="ci-h">Wie geht's dir heute?</p>
     {!open ? <><p className="top0">Optional: Stimmung, Energie und Stress in wenigen Sekunden, dazu Tags wie Reise oder Krankheit. So siehst du später, was die Umsetzung beeinflusst.</p>
       <div className="btn-row"><button className="btn small" onClick={() => setOpen(true)}>Mehr erfahren</button></div></>
-      : <><p className="hint top0">Diese Angaben sind Gesundheitsdaten. Gespeichert werden sie nur für dein Konto und nur mit deiner ausdrücklichen Einwilligung. HealthOS stellt daraus keine Diagnosen und bewertet nichts. Du kannst das jederzeit ausschalten, dann werden alle Einträge gelöscht.</p>
+      : <><p className="hint top0">Diese Angaben sind Gesundheitsdaten. Gespeichert werden sie nur für dein Konto und nur mit deiner ausdrücklichen Einwilligung. EvoVive stellt daraus keine Diagnosen und bewertet nichts. Du kannst das jederzeit ausschalten, dann werden alle Einträge gelöscht.</p>
         <div className="btn-row"><button className="btn small primary" onClick={give}>Einwilligen und einschalten</button><button className="btn small ghost" onClick={() => setOpen(false)}>Nicht jetzt</button></div></>}
     {msg && <p className="err" role="alert">{msg}</p>}
   </section>;
@@ -103,7 +103,7 @@ export function ContextInsights({ ctx }) {
       <div className="b-ci-grid" aria-hidden="true">{days.map(d => <span key={d} className={`b-ci-day${ci[d] ? '' : ' empty'}`} title={d}><i style={{ height: `${((ci[d] && ci[d].mood) || 0) * 6}px` }} /></span>)}</div>
       {ins.length ? <ul className="plain">{ins.map(x => <li key={x.tag}>An Tagen mit „{x.tag}“ hast du im Schnitt {Math.round(x.withRate * 100)} Prozent deiner Punkte geschafft, an anderen Tagen {Math.round(x.withoutRate * 100)} Prozent ({x.nWith} gegen {x.nWithout} Tage).</li>)}</ul>
         : <p className="hint">Zusammenhänge mit Tags erscheinen ab 3 Tagen mit und 5 Tagen ohne den jeweiligen Tag.</p>}
-      <p className="hint">Das sind Zusammenhänge, keine Ursachen. HealthOS bewertet dein Befinden nicht und stellt keine Diagnosen.</p>
+      <p className="hint">Das sind Zusammenhänge, keine Ursachen. EvoVive bewertet dein Befinden nicht und stellt keine Diagnosen.</p>
     </div>
   </section>;
 }

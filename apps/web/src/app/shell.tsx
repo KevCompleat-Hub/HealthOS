@@ -86,7 +86,7 @@ function BetaGate() {
 
   if (phase.k === 'bereit') return <App account={{ email: phase.user.email, signOut, supabase: supabase(), userId: phase.user.id }} />;
   return <main className="gate"><div className="gate-card">
-    <span className="brand"><span className="brand-mark" aria-hidden="true" /><span className="brand-text">HealthOS</span></span>
+    <span className="brand"><span className="brand-mark" aria-hidden="true" /><span className="brand-text">Evo<b>Vive</b></span></span>
     {phase.k === 'laden' && <p role="status">Wird geladen …</p>}
     {phase.k === 'fehler' && <><h1>Nicht verfügbar</h1><p className="gate-err" role="alert">{phase.msg}</p></>}
     {phase.k === 'anmelden' && <form onSubmit={signIn}>
@@ -109,10 +109,10 @@ function BetaGate() {
     </form>}
     {phase.k === 'einwilligung' && <form onSubmit={e => consent(e, phase.user)}>
       <h1>Bevor es losgeht</h1>
-      <p>HealthOS speichert für dein Konto:</p>
+      <p>EvoVive speichert für dein Konto:</p>
       <ul><li>Ziele, Arbeitszeiten und Einstellungen</li><li>Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund</li><li>erledigte Trainingseinheiten und Schritte</li><li>Gewicht und Körperwerte wie Körperfett, wenn du sie einträgst</li><li>Reviews mit gewählten Maßnahmen, ohne deine Antworten</li></ul>
-      <p>Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen. Mahlzeiten, Blutwerte, Termine und Dokumente sind in der Beta ausgeschaltet. Eine KI-Auswertung von Waagen-Screenshots nutzt HealthOS nur nach einer eigenen, zusätzlichen Einwilligung. Du kannst alle gespeicherten Daten jederzeit in den Einstellungen exportieren und löschen.</p>
-      <label className="check"><input type="checkbox" required /> <span>Ich willige ein, dass HealthOS diese Angaben für mich speichert und verarbeitet. Die Einwilligung ist freiwillig und jederzeit widerrufbar.</span></label>
+      <p>Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen. Mahlzeiten, Blutwerte, Termine und Dokumente sind in der Beta ausgeschaltet. Eine KI-Auswertung von Waagen-Screenshots nutzt EvoVive nur nach einer eigenen, zusätzlichen Einwilligung. Du kannst alle gespeicherten Daten jederzeit in den Einstellungen exportieren und löschen.</p>
+      <label className="check"><input type="checkbox" required /> <span>Ich willige ein, dass EvoVive diese Angaben für mich speichert und verarbeitet. Die Einwilligung ist freiwillig und jederzeit widerrufbar.</span></label>
       {phase.err && <p className="gate-err" role="alert">{phase.err}</p>}
       <button className="gate-btn" disabled={busy}>Einwilligen und starten</button>
       <button type="button" className="gate-link" onClick={signOut}>Abmelden</button>

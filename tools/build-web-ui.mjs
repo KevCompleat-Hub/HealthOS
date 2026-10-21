@@ -182,6 +182,9 @@ patch('Dokumentzuordnung Befinden', "k === 'koerper' ? r.koerper :", "k === 'koe
 patch('Befinden laden', "...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}) };", "...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}), ...(saved.checkins ? { checkins: saved.checkins.entries || {} } : {}) };");
 patch('Heute: Befinden-Check-in', '    <FoodTip ctx={ctx} />\n', '    {BETA.checkins && <CheckinCard ctx={ctx} />}\n    <FoodTip ctx={ctx} />\n');
 patch('Entwicklung: Befinden und Kontext', '    <Patterns ctx={ctx} />\n', '    <Patterns ctx={ctx} />\n    {BETA.checkins && <ContextInsights ctx={ctx} />}\n');
+// ---------- W15: Rebranding EvoVive (sichtbare Texte; interne Namen wie Dateien, Formate, Speicherschlüssel bleiben) ----------
+patch('Marke: Meldungen des Kerns beim Import mit neuem Namen', 'setImp(parseImport(JSON.parse(String(fr.result))));', "setImp((r => (r && r.error ? { ...r, error: r.error.replace('HealthOS', 'EvoVive') } : r))(parseImport(JSON.parse(String(fr.result)))));");
+patch('Marke: zweifarbige Wortmarke', '<span className="brand-text">HealthOS</span>', '<span className="brand-text">Evo<b>Vive</b></span>');
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -189,6 +192,8 @@ for (const p of P) {
   ui = ui.replace(p.from, () => p.to); log.push(p.label);
 }
 
+// Rebranding: alle übrigen sichtbaren Vorkommen ersetzen. Ausgenommen sind Bezeichner (HealthOSApp) und das Datenformat „healthos-…“.
+ui = ui.replace(/HealthOS(?![A-Za-z])/g, 'EvoVive');
 const header = `'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.

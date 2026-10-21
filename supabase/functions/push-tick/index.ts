@@ -43,7 +43,7 @@ Deno.serve(async req => {
     const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return json(401, { fehler: 'Bitte anmelden' });
     const { data: subs } = await admin.from('push_subscriptions').select('id, endpoint, p256dh, auth').eq('user_id', user.id);
-    const n = await send(cfg, subs || [], { title: 'HealthOS', body: 'Erinnerungen sind eingerichtet. So sieht eine Nachricht aus.', url: '/' });
+    const n = await send(cfg, subs || [], { title: 'EvoVive', body: 'Erinnerungen sind eingerichtet. So sieht eine Nachricht aus.', url: '/' });
     return json(200, { gesendet: n });
   }
   if (req.headers.get('x-cron-secret') !== cfg.cron_secret) return json(401, { fehler: 'Nicht berechtigt' });

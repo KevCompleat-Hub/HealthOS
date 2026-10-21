@@ -1,4 +1,10 @@
-# Release Notes HealthOS Beta
+# Release Notes EvoVive Beta (vorher HealthOS)
+
+## 0.13.0-w15 (21.10.2026), Rebranding zu EvoVive
+- Sichtbarer Name überall EvoVive: Anmeldung, Einwilligung, Onboarding, alle Ansichten, Info, Einstellungen, Hinweise, Impressum, Datenschutz, Seitentitel, Manifest, Offline-Seite, Exportdatei-Name, Feedback-Betreff.
+- Neues Symbol und Wortmarke, Waldgrün mit Salbei und warmem Hintergrund im Hell-Modus. Dunkel-Modus unverändert.
+- Neue Icon-Dateien und neuer Service-Worker-Cache, damit Bestandsnutzer nach dem nächsten Laden das neue Branding sehen.
+- Keine Änderung an Datenbank, Einwilligungen, gespeicherten Daten, Infrastruktur oder URL.
 
 ## 0.12.0-w14 (21.10.2026), Paket D: Befinden und Tags
 - Heute: „Wie geht's dir heute?“ mit Stimmung, Energie, Stress und optional Schlaf (Skala 1 bis 5) sowie Tags wie „Krankheit“, „Reise“, „Viel Arbeit“. Eigene Einwilligung, jederzeit ausschaltbar, dann werden alle Einträge gelöscht.

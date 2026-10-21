@@ -45,9 +45,9 @@ export function PushSettings({ ctx }) {
   return <section className="block" aria-labelledby="push-h">
     <h2 className="h2" id="push-h">Erinnerungen aufs Handy</h2>
     <div className="panel">
-      {state === 'ios-homescreen' && <p className="hint top0">Auf dem iPhone gehen Erinnerungen nur, wenn HealthOS auf dem Home-Bildschirm liegt: im Safari-Menü „Zum Home-Bildschirm“, dann HealthOS von dort öffnen.</p>}
+      {state === 'ios-homescreen' && <p className="hint top0">Auf dem iPhone gehen Erinnerungen nur, wenn EvoVive auf dem Home-Bildschirm liegt: im Safari-Menü „Zum Home-Bildschirm“, dann EvoVive von dort öffnen.</p>}
       {state === 'nicht-unterstuetzt' && <p className="hint top0">Dieser Browser unterstützt keine Push-Erinnerungen.</p>}
-      {state === 'blockiert' && <p className="hint top0">Benachrichtigungen sind für HealthOS blockiert. Du kannst sie in den Einstellungen des Browsers oder Handys wieder erlauben.</p>}
+      {state === 'blockiert' && <p className="hint top0">Benachrichtigungen sind für EvoVive blockiert. Du kannst sie in den Einstellungen des Browsers oder Handys wieder erlauben.</p>}
       {(state === 'aus' || state === 'an') && <p className="hint top0">{state === 'an' ? 'Eingeschaltet auf diesem Gerät.' : 'Ausgeschaltet.'} Zeitpunkte und Umfang folgen deinen Einstellungen zu Erinnerungen und Ruhezeiten. Nachrichten nennen nur Plan und Uhrzeit, nie Messwerte.</p>}
       <div className="btn-row">
         {state === 'aus' && <button className="btn small primary" onClick={enable}>Einschalten</button>}

@@ -1,6 +1,6 @@
-# HealthOS
+# EvoVive (vormals HealthOS)
 
-Persönliche Wochenplanung für Training, Bewegung, Gewohnheiten und Körperwerte. Geschlossene Beta, Version siehe `package.json` und `docs/RELEASE-NOTES.md`.
+Persönliche Gesundheitsplattform für Training, Bewegung, Gewohnheiten, Körperwerte und Befinden. Markenauftritt: `docs/BRANDING.md`. Geschlossene Beta, Version siehe `package.json` und `docs/RELEASE-NOTES.md`.
 
 - App: Next.js-PWA in `apps/web`, Fachkern in `packages/domain`, Datenbank und Dienste in `supabase/`.
 - Freigabestand und offene Sperren: `docs/RELEASE-GATES.md`. Entscheidungen: `docs/ENTSCHEIDUNGEN.md`.

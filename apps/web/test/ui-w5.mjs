@@ -198,7 +198,7 @@ await click(tabsBtn(1)); await wait(200);
 const goalHead = [...document.querySelectorAll('.goal-head')].find(g => /Gewohnheiten/.test(g.textContent));
 ok(goalHead && !/%/.test(goalHead.textContent), `Woche: Gewohnheiten als Anzahl (${goalHead ? goalHead.textContent : '-'})`);
 // Info und Konto: Rechtliches
-await click(document.querySelector('button[aria-label="Über HealthOS"]')); await wait(100);
+await click(document.querySelector('button[aria-label="Über EvoVive"]')); await wait(100);
 const infoTxt = document.body.textContent;
 if (mode !== 'demo') ok(!/Keine Push-Benachrichtigungen/.test(infoTxt) && /Push-Erinnerungen: verfügbar/.test(infoTxt), 'Info nennt den tatsächlichen Funktionsstatus');
 ok(/Version /.test(infoTxt), 'Versionsstand sichtbar');
@@ -216,6 +216,16 @@ if (mode !== 'demo') {
   ok(/"documents"/.test(txt) && /"koerper"|"settings"/.test(txt), `Export enthält alle gespeicherten Dokumente (${(txt.match(/"key"/g) || []).length} Dokumente)`);
 }
 if (mode === 'beta-db') ok(!!byText('Konto löschen'), 'Konto löschen angeboten');
+// W15: Rebranding EvoVive in allen Hauptansichten
+const seenOld = [];
+for (let t = 0; t < 4; t++) { await click(tabsBtn(t)); await wait(150); if (/HealthOS/.test(document.body.textContent)) seenOld.push(`Tab ${t}`); }
+await click(document.querySelector('button[aria-label="Einstellungen"]')); await wait(150); if (/HealthOS/.test(document.body.textContent)) seenOld.push('Einstellungen');
+const infoBtn = document.querySelector('button[aria-label="Über EvoVive"]');
+if (infoBtn) { await click(infoBtn); await wait(100); if (/HealthOS/.test(document.body.textContent)) seenOld.push('Info'); }
+ok(!seenOld.length, `Kein „HealthOS“ in Heute, Woche, Erfassen, Entwicklung, Einstellungen, Info ${seenOld.join(', ')}`);
+ok(!!infoBtn, 'Info-Knopf heißt „Über EvoVive“');
+const bt = document.querySelector('.brand-text');
+ok(!bt || (bt.textContent === 'EvoVive' && bt.querySelector('b') && bt.querySelector('b').textContent === 'Vive'), 'Wortmarke „Evo“ und „Vive“ zweifarbig');
 await act(async () => root.unmount());
 console.log(`\n${n - fails} von ${n} Klicktests bestanden (W5 ${mode})`);
 process.exit(fails ? 1 : 0);

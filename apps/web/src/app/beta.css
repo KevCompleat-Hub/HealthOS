@@ -156,3 +156,13 @@
 .b-ci-day{display:flex;align-items:flex-end;justify-content:center;height:100%;background:var(--surface2);border-radius:4px}
 .b-ci-day i{display:block;width:100%;background:var(--primary);border-radius:4px}
 .b-ci-day.empty{opacity:.4}
+
+/* ---------- EvoVive (W15): Markenfarben und Wortmarke. Nur Hell-Modus angepasst, Dunkel-Modus bleibt. ---------- */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --bg:#F3F1EA; --surface:#FCFBF7; --surface2:#E8EAE1; --line:#D8DCD1; --primary:#24543F; --sage:#8FB39A; --gold:#E6B95C; }
+}
+:root[data-theme="light"] { --bg:#F3F1EA; --surface:#FCFBF7; --surface2:#E8EAE1; --line:#D8DCD1; --primary:#24543F; --sage:#8FB39A; --gold:#E6B95C; }
+.brand-mark { background:url('/icons/evovive.svg') center / contain no-repeat; border-radius:22%; }
+.brand-text { font-family:var(--display); font-weight:600; letter-spacing:-0.01em; }
+.brand-text b { font-weight:inherit; color:var(--primary); }
+.b-ring-fg.full { stroke:var(--gold, #D99A2B); }

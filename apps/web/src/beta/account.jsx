@@ -18,14 +18,14 @@ export async function exportAllData({ account, today }) {
     const c = await Store.connect(); const docs = c ? await c.backend.getAll() : [];
     payload = { format: 'healthos-beta-export', exported_at: new Date().toISOString(), app_version: APP_VERSION, documents: docs.map(d => ({ key: d.key, body: d.body })) };
   }
-  await browserDownloads.save({ filename: `healthos-alle-daten-${today}.json`, data: JSON.stringify(payload, null, 2) });
+  await browserDownloads.save({ filename: `evovive-alle-daten-${today}.json`, data: JSON.stringify(payload, null, 2) });
   return payload;
 }
 
 /** Export-Datei prüfen: nur bekannte Dokumentschlüssel, nur Objekte, keine Gesundheitsakte. Liefert die übernehmbaren Dokumente. */
 export function parseBetaExport(text) {
   let o; try { o = JSON.parse(text); } catch { return { fehler: 'Die Datei ist kein gültiges JSON.' }; }
-  if (!o || o.format !== 'healthos-beta-export' || !Array.isArray(o.documents)) return { fehler: 'Das ist keine HealthOS-Exportdatei (Format „healthos-beta-export“).' };
+  if (!o || o.format !== 'healthos-beta-export' || !Array.isArray(o.documents)) return { fehler: 'Das ist keine EvoVive-Exportdatei.' };
   const BLOCK = ['labs', 'meals', 'appointments', 'documents'];
   const docs = o.documents.filter(d => d && typeof d.key === 'string' && DOC_KEY.test(d.key) && d.body && typeof d.body === 'object' && !Array.isArray(d.body) && !BLOCK.some(k => k in d.body) && (d.key === 'koerper' || !('weights' in d.body)));
   if (!docs.some(d => d.key === 'settings')) return { fehler: 'In der Datei fehlen die Einstellungen.' };

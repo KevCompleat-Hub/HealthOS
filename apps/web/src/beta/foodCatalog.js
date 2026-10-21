@@ -1,4 +1,4 @@
-// Zutaten-Katalog für HealthOS. Allgemeine Lebensmittelauswahl, keine Therapie, keine Nahrungsergänzung, keine Dosierung.
+// Zutaten-Katalog für EvoVive. Allgemeine Lebensmittelauswahl, keine Therapie, keine Nahrungsergänzung, keine Dosierung.
 // Aussagen je Gruppe stützen sich auf die unten genannten Quellen (am 21.10.2026 per Websuche geprüft).
 // Einzelne Nährstoffangaben sind bewusst qualitativ formuliert (zum Beispiel „eiweißreich“), ohne Zahlen pro 100 g.
 
