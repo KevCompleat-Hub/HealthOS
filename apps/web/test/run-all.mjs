@@ -8,6 +8,7 @@ const steps = [
   ['Rezeptideen (ohne Netz)', 'node', ['test/recipes.mjs']],
   ['Erinnerungslogik Push (ohne Netz)', 'node', ['test/push.mjs']],
   ['Konto: Export und Löschung', 'node', ['test/account.mjs']],
+  ['Morning Briefing', 'node', ['test/briefing.mjs']],
   ['Oberfläche Beta (Speicher wie Supabase)', 'node', ['test/ui.mjs', 'beta']],
   ['Oberfläche Entwicklungs-Demo', 'node', ['test/ui.mjs', 'demo']],
   ['Motivation und Review-Korrekturen (Beta)', 'node', ['test/ui-w5.mjs', 'beta']],

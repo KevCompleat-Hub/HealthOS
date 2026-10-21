@@ -153,9 +153,11 @@ await click([...document.querySelectorAll('.b-food')].find(li => /^Linsen/.test(
 ok(((await docsNow()).habits.habits || []).some(h => h.name === 'Ein Gericht mit Hülsenfrüchten' && h.perWeek === 1), 'Gewohnheit aus dem Katalog mit Häufigkeit 1× pro Woche gespeichert');
 await click(byText('Schließen')); await wait(100);
 ok(!document.querySelector('.b-overlay'), 'Katalog schließt');
+ok(!!document.querySelector('.b-brief') && /Dein Tag/.test(document.querySelector('.b-brief').textContent), 'Morning Briefing oben auf Heute');
 // Entwicklung ohne Kalorien
 await click(tabsBtn(3)); await wait(200);
 ok(!/Kalorien/.test(document.querySelector('main').textContent), 'Entwicklung ohne Kalorienverlauf');
+if (mode === 'demo') ok(/Gewichtstrend/.test(document.querySelector('main').textContent) && !!document.querySelector('.b-wt-line'), 'Entwicklung zeigt geglätteten Gewichtstrend');
 ok(!/Gesundheit, Für dich/.test(document.querySelector('main').textContent), 'Kein Verweis auf den ausgeblendeten Bereich „Für dich“');
 // Woche: Gewohnheiten als Anzahl statt Prozent
 await click(tabsBtn(1)); await wait(200);

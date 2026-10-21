@@ -17,3 +17,4 @@ export * from './review/questions.js';
 export * from './review/coach.js';
 export * from './io.js';
 export * from './demo/seed.js';
+export * from './trend.js';

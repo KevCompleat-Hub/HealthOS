@@ -51,13 +51,13 @@ function Ring({ done, total }) {
 }
 
 /** Der nächste sinnvolle Schritt: erste offene Plan-Aufgabe (nach dem Kern), sonst erste offene Gewohnheit. Eine Aktion. */
-export function NextStep({ ctx }) {
+export function NextStep({ ctx, bare = false }) {
   const { data, today, nowMin, commit, openSheet } = ctx;
   const plan = nextActions(data, today, nowMin).find(i => i.date === today && i.status === 'geplant' && classOfItem(i) !== 'optional_logging');
   const habit = habitsOn(data, today).find(h => !data.habitLog[hk(h, today)] && habitCountsOn(data, h, today));
   if (!plan && !habit) return null;
-  return <section className="block b-next" aria-labelledby="ns-h">
-    <p className="b-next-kicker" id="ns-h">Dein nächster Schritt</p>
+  const Wrap = bare ? ({ children }) => <div className="b-next-inner" aria-label="Dein nächster Schritt">{children}</div> : ({ children }) => <section className="block b-next" aria-labelledby="ns-h"><p className="b-next-kicker" id="ns-h">Dein nächster Schritt</p>{children}</section>;
+  return <Wrap>
     {plan ? <div className="b-next-row">
       <button className="b-next-main" onClick={() => openSheet({ kind: 'item', id: plan.id })}><b>{plan.title}</b><span>{plan.time ? `${plan.time} Uhr` : 'heute'}{plan.duration ? `, ${plan.duration} Min.` : ''}</span></button>
       <button className="btn small primary" onClick={() => { vibrate(12); commit(d => A.toggleItem(d, plan.id, today), `Erledigt: ${plan.title}`); }}>Erledigt</button>
@@ -65,7 +65,7 @@ export function NextStep({ ctx }) {
       <div className="b-next-main"><b>{habit.name}</b><span>Gewohnheit für heute</span></div>
       <button className="btn small primary" onClick={() => { vibrate(12); commit(d => ({ ...d, habitLog: { ...d.habitLog, [hk(habit, today)]: 'done' } }), `Geschafft: ${habit.name}`); }}>Abhaken</button>
     </div>}
-  </section>;
+  </Wrap>;
 }
 
 /** Tagesring, Wochenleiste und Trainingsserie oben auf „Heute“. */

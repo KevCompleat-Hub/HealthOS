@@ -154,6 +154,9 @@ patch('Heute: nächster Schritt und Fortschritt ganz oben', '    <Celebrate ctx=
 patch('Export: alle gespeicherten Daten', "await dl.save({ filename: `healthos-plan-${today}.json`, data: JSON.stringify(buildExport(cfg, data, new Date().toISOString()), null, 2) });", 'await exportAllData({ account, today });');
 patch('Konto: Export, Löschen, Version', "<p className=\"legal-links\"><a href=\"/impressum\">Impressum</a><a href=\"/datenschutz\">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>\n      </div>\n    </section>}", "<p className=\"legal-links\"><a href=\"/impressum\">Impressum</a><a href=\"/datenschutz\">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>\n        <AccountExtras ctx={ctx} />\n      </div>\n    </section>}");
 patch('Info: Funktionsstand und Version', "{!BETA.demoData && <p className=\"legal-links\">", "{!BETA.demoData && <ul className=\"b-status\">{BETA.status.map(([f, st]) => <li key={f}><span>{f}</span><b>{st}</b></li>)}</ul>}\n      <p className=\"hint\">Version {APP_VERSION}</p>\n      {!BETA.demoData && <p className=\"legal-links\">");
+// ---------- W10: Morning Briefing und Gewichtstrend ----------
+patch('Heute: Morning Briefing statt einzelnem nächsten Schritt', '    <NextStep ctx={ctx} />\n', '    <Briefing ctx={ctx} />\n');
+patch('Entwicklung: geglätteter Gewichtstrend', "Ersten Wert erfassen</button>} />}\n      </div>\n    </section>}", "Ersten Wert erfassen</button>} />}\n      </div>\n    </section>}\n    {BETA.weight && <WeightTrendCard ctx={ctx} />}");
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -176,6 +179,8 @@ import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
 import { NextStep } from '../beta/today';
+import { Briefing } from '../beta/briefing';
+import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { ${[...used].sort().join(', ')} } = D;
 `;

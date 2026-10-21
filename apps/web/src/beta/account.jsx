@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Store } from '../storage/store';
 import { browserDownloads } from '../legacy/support';
+import { DOC_KEY } from '../storage/backends';
 
 export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || 'Entwicklung';
 
@@ -21,6 +22,22 @@ export async function exportAllData({ account, today }) {
   return payload;
 }
 
+/** Export-Datei prüfen: nur bekannte Dokumentschlüssel, nur Objekte, keine Gesundheitsakte. Liefert die übernehmbaren Dokumente. */
+export function parseBetaExport(text) {
+  let o; try { o = JSON.parse(text); } catch { return { fehler: 'Die Datei ist kein gültiges JSON.' }; }
+  if (!o || o.format !== 'healthos-beta-export' || !Array.isArray(o.documents)) return { fehler: 'Das ist keine HealthOS-Exportdatei (Format „healthos-beta-export“).' };
+  const BLOCK = ['labs', 'meals', 'appointments', 'documents'];
+  const docs = o.documents.filter(d => d && typeof d.key === 'string' && DOC_KEY.test(d.key) && d.body && typeof d.body === 'object' && !Array.isArray(d.body) && !BLOCK.some(k => k in d.body) && (d.key === 'koerper' || !('weights' in d.body)));
+  if (!docs.some(d => d.key === 'settings')) return { fehler: 'In der Datei fehlen die Einstellungen.' };
+  return { docs: docs.map(d => ({ key: d.key, body: d.body })), verworfen: o.documents.length - docs.length };
+}
+
+/** Dokumente in den aktuellen Speicher schreiben (überschreibt gleichnamige), danach neu laden. */
+export async function importDocs(docs) {
+  const c = await Store.connect(); if (!c) throw new Error('Kein Speicher');
+  for (const d of docs) await c.backend.put(d.key, d.body);
+}
+
 export function AccountExtras({ ctx }) {
   const { account, today } = ctx;
   const [step, setStep] = useState(0); const [word, setWord] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
@@ -34,8 +51,14 @@ export function AccountExtras({ ctx }) {
       await account.signOut();
     } catch { setBusy(false); setMsg('Das Konto konnte nicht gelöscht werden. Bitte später erneut versuchen.'); }
   };
+  const [imp, setImp] = useState(null);
+  const pickImport = async e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return; setMsg(''); const r = parseBetaExport(await f.text()); if (r.fehler) { setImp(null); setMsg(r.fehler); } else setImp(r); };
+  const doImport = async () => { try { await importDocs(imp.docs); setMsg(`${imp.docs.length} Dokumente übernommen. Die App lädt neu.`); setTimeout(() => window.location.reload(), 600); } catch { setMsg('Übernahme fehlgeschlagen. Ist die Einwilligung erteilt?'); } };
   return <div className="b-account">
-    <div className="btn-row"><button className="btn small" onClick={doExport}>Alle Daten exportieren</button></div>
+    <div className="btn-row"><button className="btn small" onClick={doExport}>Alle Daten exportieren</button>
+      <label className="btn small ghost b-file">Daten aus Export übernehmen<input type="file" accept="application/json,.json" onChange={pickImport} /></label></div>
+    {imp && <div className="panel"><p className="hint top0">{imp.docs.length} Dokumente gefunden{imp.verworfen ? `, ${imp.verworfen} nicht übernehmbar` : ''}. Gleichnamige Daten in diesem Konto werden überschrieben.</p>
+      <div className="btn-row"><button className="btn small primary" onClick={doImport}>Übernehmen</button><button className="btn small ghost" onClick={() => setImp(null)}>Abbrechen</button></div></div>}
     {account && account.supabase && <>
       {step === 0 && <div className="btn-row"><button className="btn small ghost danger" onClick={() => setStep(1)}>Konto löschen</button></div>}
       {step === 1 && <div className="panel b-delete" role="group" aria-labelledby="del-h">
