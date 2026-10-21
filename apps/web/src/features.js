@@ -99,3 +99,8 @@ FEATURES.habitIdeas.push(
   { key: 'suesses-getraenk', name: 'Süßes Getränk', when: 'begrenzen', limit: 2, alternative: 'Sprudel mit Zitrone' },
   { key: 'handy-bett', name: 'Handy im Bett', when: 'begrenzen', limit: 1, alternative: 'Buch statt Handy', daytime: 'abends' },
 );
+
+/** Paket D (W14): Befinden und Tags mit eigener Einwilligung beta-3. */
+FEATURES.checkins = true;
+FEATURES.status.splice(3, 0, ['Befinden (Stimmung, Energie, Stress, Schlaf) und Tags wie Krankheit', 'verfügbar, nur mit eigener Einwilligung']);
+FEATURES.status.push(['Nährstoffziele mit Nährwert-Datenbank (BLS)', 'in Vorbereitung']);

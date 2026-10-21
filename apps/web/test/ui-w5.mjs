@@ -151,6 +151,17 @@ await click(byText('Fertig')); await wait(100);
 ok([...document.querySelectorAll('.b-habit.limit')].length === 1 && /höchstens 2/.test(document.querySelector('.b-habit.limit').textContent), 'Begrenzte Gewohnheit zeigt den Rahmen');
 const ringAfter = document.querySelector('.b-ring-num').textContent;
 ok(ringBefore !== ringAfter, `Begrenzte Gewohnheit zählt nicht im Tagesring (${ringBefore} → ${ringAfter})`);
+// W14: Befinden und Tags (ohne Supabase-Konto direkt nutzbar, mit Konto erst nach Einwilligung)
+await click(tabsBtn(0)); await wait(150);
+const ci = document.querySelector('.b-checkin');
+ok(!!ci && /Wie geht's dir heute/.test(ci.textContent), 'Heute zeigt den Befinden-Check-in');
+await click(ci.querySelector('button[aria-label="Stimmung: gut"]')); await wait(50);
+await click([...document.querySelectorAll('.b-checkin .chip')].find(b => b.textContent === 'Krankheit')); await wait(1100);
+const cd = (await docsNow()).checkins;
+ok(cd && cd.entries && Object.values(cd.entries).some(x => x.mood === 4 && x.tags.includes('Krankheit')), 'Stimmung und Tag „Krankheit“ gespeichert');
+ok(!!document.querySelector('.b-checkin .chip') && !!byText('Fertig'), 'Karte bleibt offen, bis „Fertig“ getippt wird');
+await click(byText('Fertig')); await wait(50);
+ok(/Stimmung: gut/.test(document.querySelector('.b-checkin').textContent) && /Krankheit/.test(document.querySelector('.b-checkin').textContent), 'Nach „Fertig“ kurze Zusammenfassung');
 // Ernährung: Idee für heute und Zutaten-Katalog
 await click(tabsBtn(0)); await wait(200);
 ok(/Idee für heute/.test(document.querySelector('main').textContent), 'Heute zeigt eine Ernährungs-Idee');

@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 119, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 125, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -16,6 +16,7 @@ import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
 import { Briefing, AltCard } from '../beta/briefing';
 import { QuickRepeat } from '../beta/logging';
 import { GoalChain, Experiments, Patterns } from '../beta/goals';
+import { CheckinCard, ContextInsights } from '../beta/checkin';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
@@ -317,6 +318,7 @@ function Today({ ctx, onSetup }) {
     </section>
 
     <HabitsToday ctx={ctx} />
+    {BETA.checkins && <CheckinCard ctx={ctx} />}
     <FoodTip ctx={ctx} />
 
     {BETA.recs && rv.primary && <section className="block" aria-labelledby="rec-h">
@@ -784,6 +786,7 @@ function Development({ ctx }) {
     <section className="block"><GoalChain ctx={ctx} /></section>
     <Experiments ctx={ctx} />
     <Patterns ctx={ctx} />
+    {BETA.checkins && <ContextInsights ctx={ctx} />}
 
     <h2 className="h2 block">Verläufe</h2>
     <Segmented label="Zeitraum" value={String(range)} onChange={v => setRange(Number(v))} options={[['7', '7 Tage'], ['30', '30 Tage'], ['90', '90 Tage'], ['365', '1 Jahr']]} />
@@ -1997,7 +2000,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
           setCfg(BETA.restrictConfig(m.cfg));
           if (m.theme) setTheme(m.theme);
           setData(d => {
-            const st = { ...d, routines: m.routines, recState: m.recState, reviews: m.reviews, items: m.items, habits: m.habits || d.habits, habitLog: m.habitLog, pauses: m.pauses, dismissed: m.dismissed, ...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}), ...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}) };
+            const st = { ...d, routines: m.routines, recState: m.recState, reviews: m.reviews, items: m.items, habits: m.habits || d.habits, habitLog: m.habitLog, pauses: m.pauses, dismissed: m.dismissed, ...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}), ...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}), ...(saved.checkins ? { checkins: saved.checkins.entries || {} } : {}) };
             const mat = materialize(st, today);
             return { ...mat, habits: syncHabits(mat.habits, m.cfg) };
           });
@@ -2018,7 +2021,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
       for (const [k, b] of Object.entries(docs)) {
         const s = JSON.stringify(b);
         if (lastSaved.current[k] === s) continue;
-        const ref = k === 'settings' ? r.settings : k === 'plan' ? r.plan : k === 'habits' ? r.habits : k === 'activity' ? r.activity : k === 'koerper' ? r.koerper : r.weeks.doc(k.slice(5));
+        const ref = k === 'settings' ? r.settings : k === 'plan' ? r.plan : k === 'habits' ? r.habits : k === 'activity' ? r.activity : k === 'koerper' ? r.koerper : k === 'checkins' ? r.checkins : r.weeks.doc(k.slice(5));
         await Store.write(ref, { ...b, savedAt: new Date().toISOString() });
         lastSaved.current[k] = s; wrote = true;
       }
@@ -2030,9 +2033,9 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
   };
   useEffect(() => {
     if (store.status !== 'ready' || !conn.current || !cfg.onboardingDone) return;
-    const t = setTimeout(() => { const docs = { ...snapshotDocs(cfg, data, theme), ...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}), ...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}) }; chain.current = chain.current.then(() => saveDocs(docs)).catch(() => {}); }, 800);
+    const t = setTimeout(() => { const docs = { ...snapshotDocs(cfg, data, theme), ...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}), ...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}), ...(BETA.checkins && data.checkins && Object.keys(data.checkins).length ? { checkins: { schema: SCHEMA, entries: data.checkins } } : {}) }; chain.current = chain.current.then(() => saveDocs(docs)).catch(() => {}); }, 800);
     return () => clearTimeout(t);
-  }, [cfg, data.items, data.routines, data.recState, data.reviews, data.habits, data.habitLog, data.pauses, data.dismissed, data.workouts, data.steps, data.weights, theme, store.status]);
+  }, [cfg, data.items, data.routines, data.recState, data.reviews, data.habits, data.habitLog, data.pauses, data.dismissed, data.workouts, data.steps, data.weights, data.checkins, theme, store.status]);
 
   const commit = (fn, msg) => {
     setData(prev => { undoRef.current = prev; return fn(prev); });

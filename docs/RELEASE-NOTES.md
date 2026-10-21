@@ -1,5 +1,11 @@
 # Release Notes HealthOS Beta
 
+## 0.12.0-w14 (21.10.2026), Paket D: Befinden und Tags
+- Heute: „Wie geht's dir heute?“ mit Stimmung, Energie, Stress und optional Schlaf (Skala 1 bis 5) sowie Tags wie „Krankheit“, „Reise“, „Viel Arbeit“. Eigene Einwilligung, jederzeit ausschaltbar, dann werden alle Einträge gelöscht.
+- Entwicklung: „Befinden und Kontext“ mit Schnitt der letzten 14 Tage und Zusammenhängen zwischen Tags und Umsetzung (erst ab genug Tagen, ausdrücklich keine Ursache, keine Diagnosen).
+- Datenbank: Dokument „checkins“ nur mit Einwilligung beta-3, live in Frankfurt geprüft.
+- Funktionsstand: Nährstoffziele mit dem Bundeslebensmittelschlüssel „in Vorbereitung“.
+
 ## 0.11.0-w13 (21.10.2026), Paket C: Priorität 2 ohne neue Datenarten
 - Goal-to-Action: unter Entwicklung „Deine Ziele im Zusammenhang“ je Ziel in Prioritätsreihenfolge mit Maßnahmen im Plan, Fortschritt (nur mit Daten), nächstem Check-in und einem nächsten Schritt. Erweitert den bestehenden Bereich „Ziele“.
 - Experimente: eine Gewohnheit 7, 14, 21 oder 30 Tage ausprobieren, Ziel 70 Prozent der Tage, am Ende „Als Gewohnheit behalten“ oder „Beenden“. Gespeichert an der Gewohnheit, kein neuer Speicher.

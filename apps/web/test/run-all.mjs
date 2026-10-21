@@ -10,6 +10,7 @@ const steps = [
   ['Konto: Export und Löschung', 'node', ['test/account.mjs']],
   ['Morning Briefing', 'node', ['test/briefing.mjs']],
   ['Paket C: Ziele, Experimente, Muster', 'node', ['test/goals.mjs']],
+  ['Paket D: Befinden und Tags', 'node', ['test/checkin.mjs']],
   ['Oberfläche Beta (Speicher wie Supabase)', 'node', ['test/ui.mjs', 'beta']],
   ['Oberfläche Entwicklungs-Demo', 'node', ['test/ui.mjs', 'demo']],
   ['Motivation und Review-Korrekturen (Beta)', 'node', ['test/ui-w5.mjs', 'beta']],

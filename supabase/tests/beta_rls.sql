@@ -18,6 +18,11 @@ insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1
 insert into r select 'Körperwerte mit Einwilligung beta-2 gespeichert', count(*) = 1 from app_documents where doc_key = 'koerper';
 insert into r select 'Gewicht außerhalb von „koerper“ weiter abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'plan', '{"weights":[]}')$$);
 insert into r select 'Blutwerte auch in „koerper“ abgewiesen', pg_temp.fails($$update app_documents set body = '{"labs":[]}' where doc_key = 'koerper'$$);
+insert into r select 'Befinden ohne beta-3 abgewiesen', pg_temp.fails($$insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'checkins', '{"entries":{}}')$$);
+insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'beta-3');
+insert into app_documents (user_id, doc_key, body) values ('11111111-1111-1111-1111-111111111111', 'checkins', '{"entries":{"2026-10-21":{"mood":4,"tags":["Krankheit"]}}}');
+insert into r select 'Befinden mit beta-3 gespeichert', count(*) = 1 from app_documents where doc_key = 'checkins';
+delete from app_documents where doc_key = 'checkins';
 insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'ki-1');
 insert into r select 'Einwilligung KI-Auswertung speicherbar', count(*) = 1 from beta_consents where version = 'ki-1';
 insert into r select 'unbekannte Einwilligungsart abgewiesen', pg_temp.fails($$insert into beta_consents (user_id, version) values ('11111111-1111-1111-1111-111111111111', 'werbung-1')$$);

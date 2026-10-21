@@ -175,6 +175,13 @@ patch('Heute: Alternative nach zweimal verpasst', '    <Briefing ctx={ctx} />\n'
 patch('Erfassen: Training mit einem Tipp wiederholen', "{seg === 'training' && <TrainingForm ctx={ctx} />}", "{seg === 'training' && <><QuickRepeat ctx={ctx} /><TrainingForm ctx={ctx} /></>}");
 // ---------- W13: Paket C ----------
 patch('Entwicklung: Zielkette, Experimente, Muster', '    <h2 className="h2 block">Verläufe</h2>', '    <section className="block"><GoalChain ctx={ctx} /></section>\n    <Experiments ctx={ctx} />\n    <Patterns ctx={ctx} />\n\n    <h2 className="h2 block">Verläufe</h2>');
+// ---------- W14: Paket D, Befinden und Tags ----------
+patch('Befinden speichern', "...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}) };", "...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}), ...(BETA.checkins && data.checkins && Object.keys(data.checkins).length ? { checkins: { schema: SCHEMA, entries: data.checkins } } : {}) };");
+patch('Speicher-Abhängigkeit Befinden', 'data.workouts, data.steps, data.weights, theme, store.status]);', 'data.workouts, data.steps, data.weights, data.checkins, theme, store.status]);');
+patch('Dokumentzuordnung Befinden', "k === 'koerper' ? r.koerper :", "k === 'koerper' ? r.koerper : k === 'checkins' ? r.checkins :");
+patch('Befinden laden', "...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}) };", "...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}), ...(saved.checkins ? { checkins: saved.checkins.entries || {} } : {}) };");
+patch('Heute: Befinden-Check-in', '    <FoodTip ctx={ctx} />\n', '    {BETA.checkins && <CheckinCard ctx={ctx} />}\n    <FoodTip ctx={ctx} />\n');
+patch('Entwicklung: Befinden und Kontext', '    <Patterns ctx={ctx} />\n', '    <Patterns ctx={ctx} />\n    {BETA.checkins && <ContextInsights ctx={ctx} />}\n');
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -200,6 +207,7 @@ import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
 import { Briefing, AltCard } from '../beta/briefing';
 import { QuickRepeat } from '../beta/logging';
 import { GoalChain, Experiments, Patterns } from '../beta/goals';
+import { CheckinCard, ContextInsights } from '../beta/checkin';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { ${[...used].sort().join(', ')} } = D;

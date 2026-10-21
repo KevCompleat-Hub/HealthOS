@@ -144,3 +144,15 @@
 .b-chain-goal summary{cursor:pointer;font-size:1rem}
 .b-exp{border-bottom:1px solid var(--line);padding:8px 0}
 .b-exp:last-of-type{border-bottom:0}
+.b-checkin{margin-top:4px}
+.b-scale-row{display:grid;grid-template-columns:minmax(80px,auto) 1fr;gap:4px 10px;align-items:center;margin:8px 0}
+.b-scale-label{font-weight:600;font-size:.9375rem}
+.b-scale-btns{display:flex;gap:6px}
+.b-scale-word{grid-column:2;font-size:.8125rem;color:var(--muted);min-height:1em}
+.b-dotbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font:inherit;font-weight:600;cursor:pointer;color:var(--ink)}
+.b-dotbtn.on{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.b-tags{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.b-ci-grid{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;align-items:end;height:36px;margin:8px 0}
+.b-ci-day{display:flex;align-items:flex-end;justify-content:center;height:100%;background:var(--surface2);border-radius:4px}
+.b-ci-day i{display:block;width:100%;background:var(--primary);border-radius:4px}
+.b-ci-day.empty{opacity:.4}
