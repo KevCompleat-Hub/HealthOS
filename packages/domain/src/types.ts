@@ -115,7 +115,11 @@ export interface Pause { id: string; kind: PauseKind; from: ISODate; to: ISODate
 /** Pause einschließlich der aus pausierten Routinen abgeleiteten Pausen */
 export interface EffectivePause { id: string; from: ISODate; to: ISODate; scope: PauseScope | 'routine'; routineId?: string; kind?: PauseKind }
 
-export interface Habit { id: string; name: string; lib?: string; active?: boolean; pinned?: boolean; custom?: boolean; inactiveFrom?: ISODate; /** Ziel pro Woche (1 bis 6). Ohne Angabe täglich. */ perWeek?: number }
+export interface Habit { id: string; name: string; lib?: string; active?: boolean; pinned?: boolean; custom?: boolean; inactiveFrom?: ISODate; /** Ziel pro Woche (1 bis 6). Ohne Angabe täglich. */ perWeek?: number;
+  /** W12: „limit“ = Gewohnheit, die begrenzt werden soll. Haken bedeutet „heute passiert“. */ kind?: 'limit';
+  /** W12: höchstens so oft pro Woche (0 bis 6), nur bei kind „limit“. */ limitPerWeek?: number;
+  /** W12: Auslöser, zum Beispiel „nach dem Mittagessen“, und Tageszeit für die Sortierung. */ trigger?: string; daytime?: 'morgens' | 'mittags' | 'abends';
+  /** W12: Alternative, die statt der begrenzten Gewohnheit helfen soll. */ alternative?: string }
 export type HabitLog = Record<string, HabitMark>;
 
 /* ---------- Erfassen (in der Referenz nur fiktive Demo-Daten) ---------- */

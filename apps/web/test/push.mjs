@@ -31,5 +31,7 @@ ok(!P.dueReminders(docs(), at('20:00')).some(x => /Erledigt/.test(x.body)), 'Erl
 ok(P.dueReminders(docs({ quietFrom: '19:00', quietTo: '07:00' }), at('20:00')).length === 0, 'Gewohnheiten-Erinnerung respektiert Ruhezeit');
 ok(P.dueReminders(docs({}, { habits: { habits: [{ id: 'h', name: 'x', active: true }], habitLog: {}, pauses: [{ from: '2026-10-20', to: '2026-10-22', scope: 'alle' }] } }), at('20:00')).length === 0, 'keine Gewohnheiten-Erinnerung in einer Pause');
 ok(JSON.stringify(P.dueReminders(docs(), at('18:00'))).match(/kg|Gewicht \d/) === null, 'keine Messwerte in Nachrichten');
+const dl = docs({}, { habits: { habits: [{ id: 'c-snack', name: 'Snacken', active: true, kind: 'limit' }], habitLog: {}, pauses: [] } });
+ok(P.dueReminders(dl, at('20:00')).length === 0, 'Begrenzte Gewohnheiten lösen keine Erinnerung aus');
 console.log(`\n${n - f} von ${n} Tests der Erinnerungslogik bestanden`);
 process.exit(f ? 1 : 0);

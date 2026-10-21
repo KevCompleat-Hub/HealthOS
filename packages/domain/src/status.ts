@@ -27,7 +27,17 @@ export function pauseStats(data: Pick<State, 'items'>, anchor: ISODate) {
 }
 export const habitOn = (h: Habit, d: ISODate): boolean => h.active !== false && !(h.inactiveFrom && d >= h.inactiveFrom);
 /** Wochenziel einer Gewohnheit (1 bis 6 pro Woche) oder null für täglich. Erweiterung nach M1, ohne Wochenziel unverändert. */
-export const weeklyTarget = (h: Habit): number | null => (Number.isInteger(h.perWeek) && (h.perWeek as number) >= 1 && (h.perWeek as number) <= 6 ? (h.perWeek as number) : null);
+/** W12: Gewohnheit zum Begrenzen? Diese zählen nicht in Erledigungsquoten. */
+export const isLimit = (h: Habit): boolean => h.kind === 'limit';
+
+/** W12: Wie oft eine begrenzte Gewohnheit in der Woche von d bis einschließlich d vorkam, und der Rahmen. */
+export function limitWeek(data: { habitLog: HabitLog }, h: Habit, d: ISODate): { count: number; max: number; within: boolean } {
+  const max = Number.isInteger(h.limitPerWeek) ? Math.max(0, Math.min(6, h.limitPerWeek as number)) : 0;
+  let count = 0; for (let x = weekStart(d); x <= d; x = addDays(x, 1)) if (data.habitLog[`${h.id}|${x}`] === 'done') count++;
+  return { count, max, within: count <= max };
+}
+
+export const weeklyTarget = (h: Habit): number | null => isLimit(h) ? null : (Number.isInteger(h.perWeek) && (h.perWeek as number) >= 1 && (h.perWeek as number) <= 6 ? (h.perWeek as number) : null);
 
 /**
  * Gewohnheit mit Wochenziel im Zeitraum [from, to], höchstens bis heute, je Kalenderwoche gerechnet.
@@ -53,7 +63,7 @@ export function weeklyHabitCounts(data: { habitLog: HabitLog; pauses?: State['pa
 
 export function habitStats(data: Pick<State, 'habits' | 'habitLog' | 'pauses'>, anchor: ISODate, today: ISODate) {
   let done = 0, eligible = 0, skipped = 0;
-  const hs = data.habits.filter(h => !weeklyTarget(h));
+  const hs = data.habits.filter(h => !weeklyTarget(h) && !isLimit(h));
   weekDays(anchor).filter(d => d <= today && !pausedAll(data, d)).forEach(d => hs.filter(h => habitOn(h, d)).forEach(h => {
     const v = data.habitLog[`${h.id}|${d}`];
     if (v === 'skip') skipped++; else { eligible++; if (v === 'done') done++; }

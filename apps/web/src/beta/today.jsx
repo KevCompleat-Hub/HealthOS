@@ -1,7 +1,7 @@
 'use client';
 // Motivations-Bausteine für „Heute“ (Beta). Rechnen nur mit Funktionen des M1-Kerns, ändern keine Fachregeln.
 import React, { useEffect, useRef, useState } from 'react';
-import { A, addDays, classOfItem, goalAt, habitOn, nextActions, nextWeeklyDate, pausedAll, planStart, reviewOffer, dayLabel, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, WD } from '@healthos/domain';
+import { A, addDays, classOfItem, goalAt, habitOn, nextActions, nextWeeklyDate, pausedAll, planStart, reviewOffer, dayLabel, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, isLimit, limitWeek, WD } from '@healthos/domain';
 import { usableOffer } from './review';
 import { FEATURES as BETA } from '../features';
 
@@ -16,6 +16,7 @@ const doneBefore = (data, h, d) => { let n = 0; for (let x = weekStart(d); x < d
 /** Zählt eine Gewohnheit an Tag d mit? Tägliche immer (außer ausgelassen), mit Wochenziel nur bis das Ziel erreicht ist. */
 export const habitCountsOn = (data, h, d) => {
   const v = data.habitLog[hk(h, d)]; const t = weeklyTarget(h);
+  if (isLimit(h)) return false;
   if (!t) return v !== 'skip';
   return v === 'done' || doneBefore(data, h, d) < t;
 };
@@ -108,13 +109,18 @@ export function TodayProgress({ ctx }) {
 }
 
 /** Gewohnheiten für heute: ein Tipp hakt ab oder öffnet wieder, langes Drücken markiert „bewusst ausgelassen“. */
+const DAYTIME = { morgens: 0, mittags: 1, abends: 2 };
+export const sortHabits = hs => [...hs].sort((a, b) => (isLimit(a) - isLimit(b)) || ((DAYTIME[a.daytime] ?? 3) - (DAYTIME[b.daytime] ?? 3)));
+
 export function HabitsToday({ ctx }) {
   const { data, today, commit, go } = ctx;
-  const hs = habitsOn(data, today);
+  const hs = sortHabits(habitsOn(data, today));
   const [ideas, setIdeas] = useState(false);
   const press = useRef(null);
   const set = (h, v, msg) => commit(d => { const log = { ...d.habitLog }; if (v) log[hk(h, today)] = v; else delete log[hk(h, today)]; return { ...d, habitLog: log }; }, msg);
-  const tap = h => { const v = data.habitLog[hk(h, today)]; if (v === 'done' || v === 'skip') set(h, null, `Wieder offen: ${h.name}`); else { vibrate(12); set(h, 'done', `Geschafft: ${h.name}`); } };
+  const tap = h => { const v = data.habitLog[hk(h, today)];
+    if (isLimit(h)) { if (v === 'done') set(h, null, `Zurückgenommen: ${h.name}`); else set(h, 'done', `Notiert: ${h.name}`); return; }
+    if (v === 'done' || v === 'skip') set(h, null, `Wieder offen: ${h.name}`); else { vibrate(12); set(h, 'done', `Geschafft: ${h.name}`); } };
   // Klick (Finger, Maus, Tastatur, Bildschirmleser) hakt ab. Langes Drücken setzt „bewusst ausgelassen“ und unterdrückt den folgenden Klick.
   const down = h => { clearTimeout(press.current); press.current = setTimeout(() => { press.current = 'lang'; vibrate([8, 40, 8]); set(h, 'skip', `Heute bewusst ausgelassen: ${h.name}`); }, 550); };
   const cancel = () => { if (press.current && press.current !== 'lang') { clearTimeout(press.current); press.current = null; } };
@@ -125,31 +131,41 @@ export function HabitsToday({ ctx }) {
   const ideaList = BETA.habitIdeas.filter(x => !data.habits.some(h => h.name === x.name && h.active !== false));
   const add = x => commit(d => {
     const ex = d.habits.find(h => h.name === x.name);
-    return { ...d, habits: ex ? d.habits.map(h => (h === ex ? { ...h, active: true, inactiveFrom: undefined, perWeek: x.perWeek } : h)) : [...d.habits, { id: `c-${x.key}`, name: x.name, custom: true, active: true, ...(x.perWeek ? { perWeek: x.perWeek } : {}) }] };
+    return { ...d, habits: ex ? d.habits.map(h => (h === ex ? { ...h, active: true, inactiveFrom: undefined, perWeek: x.perWeek } : h)) : [...d.habits, { id: `c-${x.key}`, name: x.name, custom: true, active: true, ...(x.perWeek ? { perWeek: x.perWeek } : {}), ...(x.limit != null ? { kind: 'limit', limitPerWeek: x.limit, alternative: x.alternative } : {}), ...(x.trigger ? { trigger: x.trigger } : {}), ...(x.daytime ? { daytime: x.daytime } : {}) }] };
   }, `Gewohnheit hinzugefügt: ${x.name}`);
+  const edit = (h, patch) => commit(d => ({ ...d, habits: d.habits.map(x => { if (x.id !== h.id) return x; const n = { ...x, ...patch }; Object.keys(n).forEach(k => n[k] === undefined && delete n[k]); return n; }) }), `Geändert: ${h.name}`);
   const setFreq = (h, v) => commit(d => ({ ...d, habits: d.habits.map(x => { if (x.id !== h.id) return x; const { perWeek, ...rest } = x; return v ? { ...rest, perWeek: v } : rest; }) }), `${h.name}: ${v ? `${v}× pro Woche` : 'täglich'}`);
   return <section className="block" aria-labelledby="hab-h">
     <div className="h2-row"><h2 className="h2" id="hab-h">Gewohnheiten heute</h2>
       <button className="link" onClick={() => go('woche')}>Woche</button></div>
     {hs.length ? <ul className="b-habits">
       {hs.map(h => { const v = data.habitLog[hk(h, today)]; return <li key={h.id} className="b-habit-row">
-        <button className={`b-habit ${v || 'open'}`} aria-pressed={v === 'done'}
-          aria-label={`${h.name}: ${v === 'done' ? 'geschafft, tippen zum Öffnen' : v === 'skip' ? 'bewusst ausgelassen, tippen zum Öffnen' : 'offen, tippen zum Abhaken, lange drücken zum Auslassen'}`}
+        <button className={`b-habit ${isLimit(h) ? `limit ${v === 'done' ? 'hit' : 'open'}` : (v || 'open')}`} aria-pressed={v === 'done'}
+          aria-label={isLimit(h) ? `${h.name}: ${v === 'done' ? 'heute passiert, tippen zum Zurücknehmen' : 'heute nicht passiert, tippen, wenn es doch passiert ist'}` : `${h.name}: ${v === 'done' ? 'geschafft, tippen zum Öffnen' : v === 'skip' ? 'bewusst ausgelassen, tippen zum Öffnen' : 'offen, tippen zum Abhaken, lange drücken zum Auslassen'}`}
           onPointerDown={() => down(h)} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={e => e.preventDefault()} onClick={() => click(h)}>
-          <span className="b-tick" aria-hidden="true">{v === 'done' ? '✓' : v === 'skip' ? '–' : ''}</span>
-          <span className="b-habit-name">{h.name}{(() => { const p = weekProgress(data, h, today); return p ? <small className={`b-freq${p.done >= p.target ? ' good' : ''}`}>{p.done >= p.target ? `Wochenziel erreicht (${p.done} von ${p.target})` : `${p.done} von ${p.target} diese Woche`}</small> : null; })()}</span>
+          <span className="b-tick" aria-hidden="true">{isLimit(h) ? (v === 'done' ? '•' : '') : v === 'done' ? '✓' : v === 'skip' ? '–' : ''}</span>
+          <span className="b-habit-name">{h.name}{h.trigger && <small className="b-freq">{h.trigger}</small>}{isLimit(h) && (() => { const l = limitWeek(data, h, today); return <small className={`b-freq${l.within ? ' good' : ''}`}>{l.within ? `${l.count} von höchstens ${l.max} diese Woche${l.count < l.max ? `, noch ${l.max - l.count} Spielraum` : ', Rahmen erreicht'}` : `Diese Woche über dem Rahmen. Nächste Woche zählt neu.`}{h.alternative ? ` · Stattdessen: ${h.alternative}` : ''}</small>; })()}{(() => { const p = weekProgress(data, h, today); return p ? <small className={`b-freq${p.done >= p.target ? ' good' : ''}`}>{p.done >= p.target ? `Wochenziel erreicht (${p.done} von ${p.target})` : `${p.done} von ${p.target} diese Woche`}</small> : null; })()}</span>
         </button>
         {v !== 'done' && <button className="b-skip" onClick={() => (v === 'skip' ? set(h, null, `Wieder offen: ${h.name}`) : set(h, 'skip', `Heute bewusst ausgelassen: ${h.name}`))} aria-label={v === 'skip' ? `${h.name}: Auslassen zurücknehmen` : `${h.name}: heute bewusst auslassen`}>{v === 'skip' ? 'Zurücknehmen' : 'Auslassen'}</button>}
       </li>; })}
     </ul> : <p className="hint top0">{active.length ? 'Heute ist pausiert.' : 'Noch keine Gewohnheit aktiv. Wähle unten eine, die in deinen Alltag passt.'}</p>}
     {hs.length > 0 && <p className="b-tip">Tippen hakt ab. „Auslassen“ heißt: heute bewusst nicht, zählt nicht gegen dich. Lange drücken geht auch.</p>}
     <div className="b-links"><button className="link" aria-expanded={ideas} onClick={() => setIdeas(!ideas)}>{ideas ? 'Ideen ausblenden' : 'Ideen für neue Gewohnheiten'}</button>
-      {active.length > 0 && <button className="link" aria-expanded={manage} onClick={() => setManage(!manage)}>{manage ? 'Fertig' : 'Häufigkeit anpassen'}</button>}</div>
-    {manage && <ul className="b-ideas">{active.map(h => <li key={h.id}><span><b>{h.name}</b></span>
-      <select className="input b-sel" aria-label={`Häufigkeit für ${h.name}`} value={h.perWeek || 7} onChange={e => setFreq(h, Number(e.target.value) === 7 ? null : Number(e.target.value))}>
-        {[7, 6, 5, 4, 3, 2, 1].map(v => <option key={v} value={v}>{v === 7 ? 'täglich' : `${v}× pro Woche`}</option>)}</select></li>)}</ul>}
+      {active.length > 0 && <button className="link" aria-expanded={manage} onClick={() => setManage(!manage)}>{manage ? 'Fertig' : 'Gewohnheiten bearbeiten'}</button>}</div>
+    {manage && <ul className="b-ideas b-manage">{active.map(h => <li key={h.id}><div className="b-manage-row">
+      <b>{h.name}</b>
+      <label className="b-field"><span>Art</span><select className="input b-sel" value={isLimit(h) ? 'limit' : 'do'} onChange={e => edit(h, e.target.value === 'limit' ? { kind: 'limit', limitPerWeek: h.limitPerWeek ?? 2, perWeek: undefined } : { kind: undefined, limitPerWeek: undefined, alternative: undefined })}>
+        <option value="do">Aufbauen</option><option value="limit">Begrenzen</option></select></label>
+      {isLimit(h) ? <>
+        <label className="b-field"><span>Höchstens pro Woche</span><select className="input b-sel" value={h.limitPerWeek ?? 2} onChange={e => edit(h, { limitPerWeek: Number(e.target.value) })}>{[0, 1, 2, 3, 4, 5, 6].map(v => <option key={v} value={v}>{v === 0 ? 'gar nicht' : `${v}×`}</option>)}</select></label>
+        <label className="b-field"><span>Stattdessen (optional)</span><input className="input" maxLength={80} defaultValue={h.alternative || ''} placeholder="z. B. Tee kochen" onBlur={e => edit(h, { alternative: e.target.value.trim() || undefined })} /></label>
+      </> : <label className="b-field"><span>Häufigkeit</span><select className="input b-sel" aria-label={`Häufigkeit für ${h.name}`} value={h.perWeek || 7} onChange={e => setFreq(h, Number(e.target.value) === 7 ? null : Number(e.target.value))}>
+        {[7, 6, 5, 4, 3, 2, 1].map(v => <option key={v} value={v}>{v === 7 ? 'täglich' : `${v}× pro Woche`}</option>)}</select></label>}
+      <label className="b-field"><span>Auslöser (optional)</span><input className="input" maxLength={60} defaultValue={h.trigger || ''} placeholder="z. B. nach dem Mittagessen" onBlur={e => edit(h, { trigger: e.target.value.trim() || undefined })} /></label>
+      <label className="b-field"><span>Tageszeit</span><select className="input b-sel" value={h.daytime || ''} onChange={e => edit(h, { daytime: e.target.value || undefined })}><option value="">beliebig</option><option value="morgens">morgens</option><option value="mittags">mittags</option><option value="abends">abends</option></select></label>
+    </div></li>)}</ul>}
     {ideas && <ul className="b-ideas">{ideaList.slice(0, 12).map(x => <li key={x.key}>
-      <span><b>{x.name}</b><small>{x.when}{x.perWeek ? `, ${x.perWeek}× pro Woche` : ', täglich'}</small></span>
+      <span><b>{x.name}</b><small>{x.limit != null ? `begrenzen, höchstens ${x.limit}× pro Woche` : `${x.when}${x.perWeek ? `, ${x.perWeek}× pro Woche` : ', täglich'}`}</small></span>
       <button className="btn small" onClick={() => add(x)} disabled={active.length >= 8}>Hinzufügen</button></li>)}
       {active.length >= 8 && <li className="hint">Höchstens 8 aktive Gewohnheiten. Weniger ist oft mehr.</li>}
     </ul>}

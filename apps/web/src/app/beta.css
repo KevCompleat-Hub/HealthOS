@@ -129,3 +129,13 @@
 .b-terms dd{margin:2px 0 0;color:var(--muted);font-size:.9375rem}
 .b-review-entry{margin-top:10px}
 .b-more-info summary{font-size:.8125rem;color:var(--muted);cursor:pointer}
+.b-habit.limit .b-tick{border-color:var(--muted)}
+.b-habit.limit.hit .b-tick{background:var(--muted);color:var(--bg)}
+.b-manage-row{display:grid;gap:6px;width:100%}
+.b-manage li{display:block}
+.b-sugg{list-style:none;padding:0;margin:4px 0 10px;display:grid;gap:8px}
+.b-sugg li{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--surface2);border-radius:12px;padding:8px 10px}
+.b-sugg b{display:block;font-size:.9375rem}
+.b-sugg span{font-size:.8125rem;color:var(--muted)}
+.b-alt{border:1px dashed var(--primary)}
+.b-repeat{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}

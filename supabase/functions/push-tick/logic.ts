@@ -6,7 +6,7 @@ export interface Reminder { key: string; title: string; body: string; url: strin
 export interface UserDocs {
   settings?: { config?: { reminders?: { intensity?: string; lead?: number; quietFrom?: string; quietTo?: string } } };
   week?: { items?: Item[] };
-  habits?: { habits?: { id: string; name: string; active?: boolean; inactiveFrom?: string; perWeek?: number }[]; habitLog?: Record<string, string>; pauses?: { from: string; to: string; scope: string }[] };
+  habits?: { habits?: { id: string; name: string; active?: boolean; inactiveFrom?: string; perWeek?: number; kind?: string }[]; habitLog?: Record<string, string>; pauses?: { from: string; to: string; scope: string }[] };
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -55,7 +55,7 @@ export function dueReminders(docs: UserDocs, now: Date, windowMin = 15): Reminde
     out.push({ key: `${date}|${it.id}`, title: 'HealthOS', body: (TEXT[it.type] || (x => `${x.title} um ${x.time} Uhr.`))(it), url: '/' });
   }
   if (intensity !== 'sanft' && !paused && min <= 20 * 60 && 20 * 60 < min + windowMin && !inQuiet(20 * 60, r.quietFrom, r.quietTo)) {
-    const hs = (docs.habits?.habits || []).filter(h => h.active !== false && !(h.inactiveFrom && date >= h.inactiveFrom));
+    const hs = (docs.habits?.habits || []).filter(h => h.active !== false && h.kind !== 'limit' && !(h.inactiveFrom && date >= h.inactiveFrom));
     const log = docs.habits?.habitLog || {};
     const open = hs.filter(h => !log[`${h.id}|${date}`]).filter(h => {
       if (!h.perWeek) return true; let n = 0; for (let x = weekStart(date); x < date; x = addDays(x, 1)) if (log[`${h.id}|${x}`] === 'done') n++; return n < h.perWeek;

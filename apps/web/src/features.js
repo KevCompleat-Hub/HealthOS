@@ -91,3 +91,11 @@ FEATURES.terms = [
 ];
 /** Onboarding auf 4 Schritte: Pausen, Ernährung und Erinnerungen nutzen Voreinstellungen und bleiben in den Einstellungen änderbar. */
 FEATURES.obSkip = ['pausen', 'ernaehrung', 'erinnerungen'];
+
+// W12: Ideen mit Auslöser und Tageszeit sowie Gewohnheiten zum Begrenzen (mit Alternative).
+FEATURES.habitIdeas.forEach(x => { const t = { 'wasser-morgens': ['nach dem Aufstehen', 'morgens'], 'gehen-mittag': ['nach dem Mittagessen', 'mittags'], 'mobilisieren': ['nach dem Aufstehen', 'morgens'], 'sporttasche': ['am Vorabend', 'abends'], 'handy-raus': ['vor dem Schlafengehen', 'abends'], 'tag-planen': ['beim ersten Kaffee', 'morgens'], 'tageslicht': ['in der Mittagspause', 'mittags'] }[x.key]; if (t) { x.trigger = t[0]; x.daytime = t[1]; } });
+FEATURES.habitIdeas.push(
+  { key: 'snack-abends', name: 'Abends snacken', when: 'begrenzen', limit: 2, alternative: 'Tee kochen oder Zähne putzen', daytime: 'abends' },
+  { key: 'suesses-getraenk', name: 'Süßes Getränk', when: 'begrenzen', limit: 2, alternative: 'Sprudel mit Zitrone' },
+  { key: 'handy-bett', name: 'Handy im Bett', when: 'begrenzen', limit: 1, alternative: 'Buch statt Handy', daytime: 'abends' },
+);

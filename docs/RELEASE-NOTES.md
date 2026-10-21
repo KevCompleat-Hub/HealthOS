@@ -1,5 +1,13 @@
 # Release Notes HealthOS Beta
 
+## 0.10.0-w12 (21.10.2026), Paket B: Priorität 1 vervollständigt
+- Briefing: bis zu zwei Vorschläge mit Anlass, Begründung und Aktion (Gewicht bei Ziel „Abnehmen“, Trainingsziel in Gefahr, Gewohnheit im Rückstand, Rahmen einer begrenzten Gewohnheit erreicht). Ohne Datengrundlage kein Vorschlag.
+- Habit Stacking: Auslöser („nach dem Mittagessen“) und Tageszeit je Gewohnheit, Sortierung auf Heute nach Tageszeit.
+- Bad Habits: Gewohnheiten zum Begrenzen mit „höchstens n pro Woche“ und optionaler Alternative. Positive Darstellung, jede Woche zählt neu. Drei Ideen zum Begrenzen.
+- Smart Logging: letzte Trainings mit einem Tipp wiederholen, verrechnet mit der offenen geplanten Einheit der Woche.
+- Adaptive Alternativen: nach zwei verpassten Terminen derselben Routine Vorschlag „ab morgen kürzer“, nur nach Bestätigung, vergangene Termine bleiben.
+- Push: begrenzte Gewohnheiten lösen keine Erinnerung „noch offen“ aus.
+
 ## 0.9.0-w11 (21.10.2026), Paket A: Beta stabilisieren, Umzug nach Frankfurt
 - Datenbank und Dienste laufen in Frankfurt (eu-central-1). Datenschutzerklärung und Entscheidungen angepasst (E-15).
 - Onboarding auf 4 Schritte: Ziele, Arbeitsalltag, Training, Plan mit Vorschau. Pausen, Ernährung und Erinnerungen mit Voreinstellungen, änderbar in den Einstellungen. Gewohnheiten werden weiter passend zu den Zielen vorgeschlagen.

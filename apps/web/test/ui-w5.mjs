@@ -139,6 +139,18 @@ if (more) {
   ok(!!skipBtn, 'Menü „⋯“ bietet Auslassen oder Wieder öffnen');
   if (byText('Heute auslassen')) { await click(byText('Heute auslassen')); await wait(1100); ok(Object.values(((await docsNow()).habits.habitLog || {})).includes('skip'), 'Auslassen über das Menü gespeichert'); }
 }
+// W12: Gewohnheit auf „Begrenzen“ umstellen
+await click(tabsBtn(0)); await wait(150);
+const ringBefore = document.querySelector('.b-ring-num').textContent;
+await click(byText('Gewohnheiten bearbeiten')); await wait(100);
+const artSel = [...document.querySelectorAll('.b-manage select')][0];
+await act(async () => { artSel.value = 'limit'; artSel.dispatchEvent(new window.Event('change', { bubbles: true })); }); await wait(1100);
+const lim = ((await docsNow()).habits.habits || []).find(h => h.kind === 'limit');
+ok(lim && lim.limitPerWeek === 2, `Gewohnheit als „Begrenzen“ gespeichert, Rahmen 2 (${lim ? lim.name : '-'})`);
+await click(byText('Fertig')); await wait(100);
+ok([...document.querySelectorAll('.b-habit.limit')].length === 1 && /höchstens 2/.test(document.querySelector('.b-habit.limit').textContent), 'Begrenzte Gewohnheit zeigt den Rahmen');
+const ringAfter = document.querySelector('.b-ring-num').textContent;
+ok(ringBefore !== ringAfter, `Begrenzte Gewohnheit zählt nicht im Tagesring (${ringBefore} → ${ringAfter})`);
 // Ernährung: Idee für heute und Zutaten-Katalog
 await click(tabsBtn(0)); await wait(200);
 ok(/Idee für heute/.test(document.querySelector('main').textContent), 'Heute zeigt eine Ernährungs-Idee');

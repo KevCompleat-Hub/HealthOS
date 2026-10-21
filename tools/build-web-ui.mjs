@@ -170,6 +170,9 @@ for (const phrase of ['HealthOS behauptet keinen Zusammenhang', 'Verpasst zählt
   const l = ui.split('\n').find(x => x.includes(phrase) && /<p className="(hint|muted)[^"]*">/.test(x));
   if (l) patch(`Absicherungstext hinter „Mehr dazu“: ${phrase}`, l, l.replace(/^(\s*)(.*)$/, '$1<details className="b-more-info"><summary>Mehr dazu</summary>$2</details>'));
 }
+// ---------- W12: Paket B ----------
+patch('Heute: Alternative nach zweimal verpasst', '    <Briefing ctx={ctx} />\n', '    <Briefing ctx={ctx} />\n    <AltCard ctx={ctx} />\n');
+patch('Erfassen: Training mit einem Tipp wiederholen', "{seg === 'training' && <TrainingForm ctx={ctx} />}", "{seg === 'training' && <><QuickRepeat ctx={ctx} /><TrainingForm ctx={ctx} /></>}");
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -192,7 +195,8 @@ import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
 import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
-import { Briefing } from '../beta/briefing';
+import { Briefing, AltCard } from '../beta/briefing';
+import { QuickRepeat } from '../beta/logging';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { ${[...used].sort().join(', ')} } = D;

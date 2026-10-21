@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 116, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 118, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -13,7 +13,8 @@ import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
 import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
-import { Briefing } from '../beta/briefing';
+import { Briefing, AltCard } from '../beta/briefing';
+import { QuickRepeat } from '../beta/logging';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
@@ -304,6 +305,7 @@ function Today({ ctx, onSetup }) {
     {pausedToday && <p className="callout pause-note"><Icon name="pause" size={16} /> Heute ist pausiert. Pausierte Einträge zählen nicht in deine Ziele.</p>}
 
     <Briefing ctx={ctx} />
+    <AltCard ctx={ctx} />
     <TodayProgress ctx={ctx} />
     <Celebrate ctx={ctx} />
     <section className="block tight" aria-labelledby="next-h">
@@ -701,7 +703,7 @@ function Capture({ ctx, seg, setSeg }) {
     <Segmented label="Was möchtest du erfassen?" value={seg} onChange={setSeg} options={[['gewicht', 'Gewicht'], ['schritte', 'Schritte'], ['training', 'Training'], ['mahlzeit', 'Mahlzeit']].filter(([k]) => BETA.capture.includes(k))} />
     {BETA.capture.includes('gewicht') && seg === 'gewicht' && <><WeightForm ctx={ctx} /><ScaleImport ctx={ctx} /></>}
     {seg === 'schritte' && <StepsForm ctx={ctx} />}
-    {seg === 'training' && <TrainingForm ctx={ctx} />}
+    {seg === 'training' && <><QuickRepeat ctx={ctx} /><TrainingForm ctx={ctx} /></>}
     {BETA.capture.includes('mahlzeit') && seg === 'mahlzeit' && <MealForm ctx={ctx} />}
   </div>;
 }
