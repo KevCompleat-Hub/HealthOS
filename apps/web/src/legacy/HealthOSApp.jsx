@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 97, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 104, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -12,6 +12,8 @@ import { usableOffer, fixText } from '../beta/review';
 import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
+import { NextStep } from '../beta/today';
+import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
 /* HealthOS – Demo-Prototyp. Alle Daten sind fiktiv und liegen nur im Arbeitsspeicher. */
 /* ---------------- Datum & Format ---------------- */
@@ -299,6 +301,7 @@ function Today({ ctx, onSetup }) {
     {cfg.skipped && <div className="setup-banner"><p>Du nutzt noch den {BETA.demoData ? 'Demo-Plan' : 'Standardplan'}. In etwa zwei Minuten entsteht dein persönlicher Wochenplan.</p><button className="btn small primary" onClick={onSetup}>Plan einrichten</button></div>}
     {pausedToday && <p className="callout pause-note"><Icon name="pause" size={16} /> Heute ist pausiert. Pausierte Einträge zählen nicht in deine Ziele.</p>}
 
+    <NextStep ctx={ctx} />
     <TodayProgress ctx={ctx} />
     <Celebrate ctx={ctx} />
     <section className="block tight" aria-labelledby="next-h">
@@ -324,7 +327,7 @@ function Today({ ctx, onSetup }) {
         <Stat icon="dumbbell" label="Training" value={goal ? `${tw} von ${goal}` : `${tw}`} sub={!goal ? 'kein Trainingsziel' : tw >= goal ? 'Wochenziel erreicht' : `noch ${goal - tw} diese Woche`} onClick={() => go('woche')} />
         <Stat icon="activity" label="Bewegungspausen" value={ps.eligible ? `${ps.done} von ${ps.eligible}` : 'keine geplant'} missing={!ps.eligible} sub={ps.eligible && ps.done >= ps.eligible ? 'alle geschafft' : ps.eligible ? `noch ${ps.eligible - ps.done} diese Woche` : 'werktags'} onClick={() => go('woche')} />
         <Stat icon="steps" label="Schritte heute" value={stepsToday ? fmtNum(stepsToday.count) : 'nicht erfasst'} missing={!stepsToday} sub={stepsToday ? 'manuell eingetragen' : 'optional, tippen zum Eintragen'} onClick={() => go('erfassen', 'schritte')} />
-        {BETA.weight && <Stat icon="scale" label="Gewicht" value={wt ? `${signed(wt.delta)} kg` : 'zu wenige Werte'} missing={!wt} sub={wt ? 'Ø 7 Tage ggü. Vorwoche' : 'je Woche 1 Wert nötig'} onClick={() => go('entwicklung')} />}
+        {BETA.weight && <Stat icon="scale" label="Gewicht" value={wt ? `${signed(wt.delta)} kg` : 'Eintragen'} missing={!wt} sub={wt ? 'Ø 7 Tage ggü. Vorwoche' : 'tippen zum Eintragen'} onClick={() => (wt ? go('entwicklung') : go('erfassen', 'gewicht'))} />}
       </div>
       <CoachLine ctx={ctx} />
     </section>
@@ -1136,6 +1139,8 @@ function InfoSheet({ close, onSettings }) {
       <p className="hint">{BETA.demoData ? "Nur Einstellungen, Routinen, Wochenplan, Gewohnheiten und Pausen ohne Grund, privat für dein Konto. Messwerte, Laborwerte, Termine, Gewicht und laborbezogene Empfehlungen bleiben Demo-Daten dieser Sitzung." : BETA.info.stored}</p>
       <h3 className="h3">Was bewusst fehlt</h3>
       <p className="hint">{BETA.demoData ? "Keine Push-Benachrichtigungen, kein Datei-Upload, keine Verbindung zu Health Connect, keine KI-Auswertung. Diese Datei ist noch keine installierbare App (PWA)." : BETA.info.missing}</p>
+      {!BETA.demoData && <ul className="b-status">{BETA.status.map(([f, st]) => <li key={f}><span>{f}</span><b>{st}</b></li>)}</ul>}
+      <p className="hint">Version {APP_VERSION}</p>
       {!BETA.demoData && <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>}
       <button className="btn wide" onClick={() => { close(); onSettings(); }}>Zu den Einstellungen</button>
     </div>
@@ -1627,7 +1632,8 @@ function StepWeight({ body, setBody }) {
 function StepGoals({ cfg, setCfg }) {
   const move = (i, dir) => setCfg(c => { const g = [...c.goals]; const j = i + dir; if (j < 0 || j >= g.length) return c; [g[i], g[j]] = [g[j], g[i]]; return { ...c, goals: g }; });
   return <>
-    <Chips multi options={Object.entries(GOALS).filter(([k]) => !BETA.hiddenGoals.includes(k))} value={cfg.goals} onChange={v => setCfg(c => ({ ...c, goals: v }))} />
+    <p className="hint">{BETA.goalHint}</p>
+      <Chips multi options={Object.entries(GOALS).filter(([k]) => !BETA.hiddenGoals.includes(k))} value={cfg.goals} onChange={v => setCfg(c => ({ ...c, goals: v }))} />
     {cfg.goals.length > 1 && <>
       <h3 className="h3">Reihenfolge nach Wichtigkeit</h3>
       <ol className="rank">{cfg.goals.map((g, i) => <li key={g}>
@@ -1897,6 +1903,7 @@ function Settings({ ctx, cfg, applyConfig, store, theme, setTheme, onExport, onI
         <p className="hint top0">Angemeldet als {ctx.account.email}.</p>
         <div className="btn-row"><button className="btn small" onClick={ctx.account.signOut}>Abmelden</button></div>
         <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>
+        <AccountExtras ctx={ctx} />
       </div>
     </section>}
     <section className="block">
@@ -2045,7 +2052,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
     try {
       const dl = browserDownloads;
       if (!dl) return say('Export ist in dieser Ansicht nicht verfügbar.');
-      await dl.save({ filename: `healthos-plan-${today}.json`, data: JSON.stringify(buildExport(cfg, data, new Date().toISOString()), null, 2) });
+      await exportAllData({ account, today });
       say('Export bereitgestellt');
     } catch (e) { say(e && e.code === 'declined' ? 'Export abgebrochen' : 'Export war nicht möglich.'); }
   };

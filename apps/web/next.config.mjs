@@ -9,8 +9,12 @@ const csp = [
   `connect-src 'self'${supa ? ` ${supa}` : ''}`,
   "worker-src 'self'", "manifest-src 'self'", "frame-ancestors 'none'", "base-uri 'self'", "form-action 'self'", "object-src 'none'",
 ].join('; ');
+import { readFileSync } from 'node:fs';
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+const sha = (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: { NEXT_PUBLIC_APP_VERSION: `${pkg.version}${sha ? ` (${sha})` : ''}` },
   reactStrictMode: true,
   poweredByHeader: false,
   async headers() {

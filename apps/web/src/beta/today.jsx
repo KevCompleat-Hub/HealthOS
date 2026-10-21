@@ -1,7 +1,7 @@
 'use client';
 // Motivations-Bausteine für „Heute“ (Beta). Rechnen nur mit Funktionen des M1-Kerns, ändern keine Fachregeln.
 import React, { useEffect, useRef, useState } from 'react';
-import { addDays, classOfItem, goalAt, habitOn, pausedAll, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, WD } from '@healthos/domain';
+import { A, addDays, classOfItem, goalAt, habitOn, nextActions, pausedAll, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, WD } from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
 
 const vibrate = p => { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch { /* ohne Vibration */ } };
@@ -50,6 +50,24 @@ function Ring({ done, total }) {
   </svg>;
 }
 
+/** Der nächste sinnvolle Schritt: erste offene Plan-Aufgabe (nach dem Kern), sonst erste offene Gewohnheit. Eine Aktion. */
+export function NextStep({ ctx }) {
+  const { data, today, nowMin, commit, openSheet } = ctx;
+  const plan = nextActions(data, today, nowMin).find(i => i.date === today && i.status === 'geplant' && classOfItem(i) !== 'optional_logging');
+  const habit = habitsOn(data, today).find(h => !data.habitLog[hk(h, today)] && habitCountsOn(data, h, today));
+  if (!plan && !habit) return null;
+  return <section className="block b-next" aria-labelledby="ns-h">
+    <p className="b-next-kicker" id="ns-h">Dein nächster Schritt</p>
+    {plan ? <div className="b-next-row">
+      <button className="b-next-main" onClick={() => openSheet({ kind: 'item', id: plan.id })}><b>{plan.title}</b><span>{plan.time ? `${plan.time} Uhr` : 'heute'}{plan.duration ? `, ${plan.duration} Min.` : ''}</span></button>
+      <button className="btn small primary" onClick={() => { vibrate(12); commit(d => A.toggleItem(d, plan.id, today), `Erledigt: ${plan.title}`); }}>Erledigt</button>
+    </div> : <div className="b-next-row">
+      <div className="b-next-main"><b>{habit.name}</b><span>Gewohnheit für heute</span></div>
+      <button className="btn small primary" onClick={() => { vibrate(12); commit(d => ({ ...d, habitLog: { ...d.habitLog, [hk(habit, today)]: 'done' } }), `Geschafft: ${habit.name}`); }}>Abhaken</button>
+    </div>}
+  </section>;
+}
+
 /** Tagesring, Wochenleiste und Trainingsserie oben auf „Heute“. */
 export function TodayProgress({ ctx }) {
   const { data, today, cfg } = ctx;
@@ -61,7 +79,7 @@ export function TodayProgress({ ctx }) {
   const open = t.total - t.done;
   const msg = !t.total ? 'Heute ist nichts geplant. Ein guter Tag für eine Runde nach Lust und Laune.'
     : open === 0 ? 'Alles erledigt für heute. Stark.'
-      : t.done === 0 ? `${open} ${open === 1 ? 'Punkt wartet' : 'Punkte warten'} auf dich.`
+      : t.done === 0 ? 'Der erste Haken ist der wichtigste. Oben steht, womit du anfangen kannst.'
         : `Noch ${open} ${open === 1 ? 'Punkt' : 'Punkte'}, du bist gut dabei.`;
   return <section className="block b-progress" aria-label="Fortschritt heute">
     <div className="b-prog-top">
@@ -100,27 +118,30 @@ export function HabitsToday({ ctx }) {
   const down = h => { clearTimeout(press.current); press.current = setTimeout(() => { press.current = 'lang'; vibrate([8, 40, 8]); set(h, 'skip', `Heute bewusst ausgelassen: ${h.name}`); }, 550); };
   const cancel = () => { if (press.current && press.current !== 'lang') { clearTimeout(press.current); press.current = null; } };
   const click = h => { if (press.current === 'lang') { press.current = null; return; } cancel(); tap(h); };
+  const [menu, setMenu] = useState(null);
+  const [manage, setManage] = useState(false);
   const active = data.habits.filter(h => h.active !== false);
   const ideaList = BETA.habitIdeas.filter(x => !data.habits.some(h => h.name === x.name && h.active !== false));
   const add = x => commit(d => {
     const ex = d.habits.find(h => h.name === x.name);
     return { ...d, habits: ex ? d.habits.map(h => (h === ex ? { ...h, active: true, inactiveFrom: undefined, perWeek: x.perWeek } : h)) : [...d.habits, { id: `c-${x.key}`, name: x.name, custom: true, active: true, ...(x.perWeek ? { perWeek: x.perWeek } : {}) }] };
   }, `Gewohnheit hinzugefügt: ${x.name}`);
-  const [manage, setManage] = useState(false);
   const setFreq = (h, v) => commit(d => ({ ...d, habits: d.habits.map(x => { if (x.id !== h.id) return x; const { perWeek, ...rest } = x; return v ? { ...rest, perWeek: v } : rest; }) }), `${h.name}: ${v ? `${v}× pro Woche` : 'täglich'}`);
   return <section className="block" aria-labelledby="hab-h">
     <div className="h2-row"><h2 className="h2" id="hab-h">Gewohnheiten heute</h2>
       <button className="link" onClick={() => go('woche')}>Woche</button></div>
     {hs.length ? <ul className="b-habits">
-      {hs.map(h => { const v = data.habitLog[hk(h, today)]; return <li key={h.id}>
+      {hs.map(h => { const v = data.habitLog[hk(h, today)]; return <li key={h.id} className="b-habit-row">
         <button className={`b-habit ${v || 'open'}`} aria-pressed={v === 'done'}
           aria-label={`${h.name}: ${v === 'done' ? 'geschafft, tippen zum Öffnen' : v === 'skip' ? 'bewusst ausgelassen, tippen zum Öffnen' : 'offen, tippen zum Abhaken, lange drücken zum Auslassen'}`}
           onPointerDown={() => down(h)} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={e => e.preventDefault()} onClick={() => click(h)}>
           <span className="b-tick" aria-hidden="true">{v === 'done' ? '✓' : v === 'skip' ? '–' : ''}</span>
           <span className="b-habit-name">{h.name}{(() => { const p = weekProgress(data, h, today); return p ? <small className={`b-freq${p.done >= p.target ? ' good' : ''}`}>{p.done >= p.target ? `Wochenziel erreicht (${p.done} von ${p.target})` : `${p.done} von ${p.target} diese Woche`}</small> : null; })()}</span>
-        </button></li>; })}
+        </button>
+        {v !== 'done' && <button className="b-skip" onClick={() => (v === 'skip' ? set(h, null, `Wieder offen: ${h.name}`) : set(h, 'skip', `Heute bewusst ausgelassen: ${h.name}`))} aria-label={v === 'skip' ? `${h.name}: Auslassen zurücknehmen` : `${h.name}: heute bewusst auslassen`}>{v === 'skip' ? 'Zurücknehmen' : 'Auslassen'}</button>}
+      </li>; })}
     </ul> : <p className="hint top0">{active.length ? 'Heute ist pausiert.' : 'Noch keine Gewohnheit aktiv. Wähle unten eine, die in deinen Alltag passt.'}</p>}
-    {hs.length > 0 && <p className="b-tip">Tippen hakt ab. Lange drücken heißt: heute bewusst ausgelassen, zählt nicht gegen dich.</p>}
+    {hs.length > 0 && <p className="b-tip">Tippen hakt ab. „Auslassen“ heißt: heute bewusst nicht, zählt nicht gegen dich. Lange drücken geht auch.</p>}
     <div className="b-links"><button className="link" aria-expanded={ideas} onClick={() => setIdeas(!ideas)}>{ideas ? 'Ideen ausblenden' : 'Ideen für neue Gewohnheiten'}</button>
       {active.length > 0 && <button className="link" aria-expanded={manage} onClick={() => setManage(!manage)}>{manage ? 'Fertig' : 'Häufigkeit anpassen'}</button>}</div>
     {manage && <ul className="b-ideas">{active.map(h => <li key={h.id}><span><b>{h.name}</b></span>

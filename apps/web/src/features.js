@@ -31,7 +31,7 @@ FEATURES.restrictConfig = cfg => ({
 FEATURES.info = {
   works: 'Einrichtung, automatischer Wochenplan, Routinen mit Versionen und Ausnahmen, Abhaken, Verschieben, Ersatz in derselben Woche, Pausen, Gewohnheiten, Training und Schritte erfassen, Wochen- und Monatsreviews mit Maßnahmen.',
   stored: 'Einstellungen, Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund, Reviews ohne Antworten sowie Training, Schritte sowie Gewicht und Körperwerte, privat für dein Konto. Mahlzeiten, Blutwerte, Termine und Dokumente sind ausgeschaltet.',
-  missing: 'Keine Push-Benachrichtigungen, keine Verbindung zu Health Connect, keine medizinischen Empfehlungen. KI nur für das Auslesen von Waagen-Screenshots, mit eigener Einwilligung.',
+  missing: 'Funktionsstand dieser Version: siehe Liste unten.',
 };
 
 // Ziel „Abnehmen“ bezieht sich auf Gewicht, das in der Beta nicht erfasst wird (Review vom 20.10.2026).
@@ -66,3 +66,18 @@ FEATURES.foodGuide = true;
 
 /** KI-Rezeptideen, gleiche Freischaltung wie die Screenshot-Auswertung (NEXT_PUBLIC_SCALE_AI=on). */
 FEATURES.aiRecipes = FEATURES.scaleAi;
+
+/** Zentraler Funktionsstatus. Info-Texte werden daraus erzeugt, damit nie etwas versprochen wird, das nicht eingerichtet ist (Audit P1-07). */
+FEATURES.status = [
+  ['Push-Erinnerungen', 'verfügbar, auf dem iPhone nur als Home-Bildschirm-App'],
+  ['Waagen-Screenshot und Rezeptideen per KI', FEATURES.scaleAi ? 'verfügbar, nur mit eigener Einwilligung' : 'in Einrichtung'],
+  ['Ernährung', 'Ideen und Zutaten-Katalog, keine Kalorien- oder Mahlzeitenerfassung'],
+  ['Blutwerte, Arzttermine, Dokumente, medizinische Empfehlungen', 'in der Beta ausgeschaltet'],
+  ['Health Connect und Wearables', 'geplant, noch nicht verfügbar'],
+];
+FEATURES.info.missing = FEATURES.status.map(([k, v]) => `${k}: ${v}.`).join(' ');
+FEATURES.info.works = 'Einrichtung, automatischer Wochenplan, Routinen mit Versionen und Ausnahmen, Abhaken, Auslassen, Verschieben, Ersatz in derselben Woche, Pausen, Gewohnheiten mit Häufigkeit, Training, Schritte und Gewicht erfassen, Wochen- und Monatsreviews mit Maßnahmen, Push-Erinnerungen.';
+/** Sichtbarer Versionsstand (Audit: Release-Kennzeichnung). */
+FEATURES.version = process.env.NEXT_PUBLIC_APP_VERSION || 'Entwicklung';
+/** Kurze Erklärung der Ziele im Onboarding (Audit P2). */
+FEATURES.goalHint = '„Fitter werden“ heißt Kondition und Kraft durch Training. „Mehr Bewegung“ heißt weniger Sitzen und mehr Alltagsbewegung. Beides zusammen ist möglich. Die Reihenfolge bestimmt, worauf die App zuerst achtet.';

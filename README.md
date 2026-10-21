@@ -1,10 +1,12 @@
-# HealthOS, Phase M1: Domänenkern in TypeScript
+# HealthOS
 
-Stand: 19.10.2026 · Version `0.1.0-m1` · Grundlage: eingefrorene Referenz v5 (Claude-Artifact)
+Persönliche Wochenplanung für Training, Bewegung, Gewohnheiten und Körperwerte. Geschlossene Beta, Version siehe `package.json` und `docs/RELEASE-NOTES.md`.
 
-Dieses Paket enthält den vollständigen Fachkern von HealthOS (HOS-001 bis HOS-006) als streng typisierte TypeScript-Module,
-die eingefrorene Referenz und die Paritätstests, die belegen, dass der neue Kern sich genauso verhält wie die Referenz.
-Es enthält keine Oberfläche, keine Datenbankanbindung, keine Verbindung zu Gesundheitsdiensten und keine echten Gesundheitsdaten.
+- App: Next.js-PWA in `apps/web`, Fachkern in `packages/domain`, Datenbank und Dienste in `supabase/`.
+- Freigabestand und offene Sperren: `docs/RELEASE-GATES.md`. Entscheidungen: `docs/ENTSCHEIDUNGEN.md`.
+- Tests: `cd apps/web && node test/run-all.mjs` (mit lokalem Datenbank-Prüfstand: `HEALTHOS_DB_TEST=1`).
+
+Die folgenden Abschnitte beschreiben die Grundlage aus Phase M1.
 
 ## Inhalt
 

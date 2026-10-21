@@ -6,7 +6,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import { dueReminders, weekStart, berlinNow, type UserDocs } from './logic.ts';
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
-const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+// CORS: Die Testnachricht wird aus dem Browser aufgerufen (Fehler aus W8, im Audit-Durchgang gefunden)
+const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
+const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
 async function config() {
   const { data } = await admin.from('push_config').select('*').eq('id', 1).maybeSingle();
@@ -24,6 +26,7 @@ async function send(cfg: { public_key: string; private_key: string; subject: str
 }
 
 Deno.serve(async req => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json(405, { fehler: 'Nur POST' });
   const body = await req.json().catch(() => ({})) as { setup?: boolean; test?: boolean };
   let cfg = await config();

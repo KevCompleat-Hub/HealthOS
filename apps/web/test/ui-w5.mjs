@@ -20,6 +20,7 @@ const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></
 Object.assign(globalThis, { window: dom.window, document: dom.window.document, HTMLElement: dom.window.HTMLElement, Node: dom.window.Node, FileReader: dom.window.FileReader, localStorage: dom.window.localStorage });
 Object.defineProperty(globalThis, 'navigator', { value: dom.window.navigator, configurable: true });
 window.scrollTo = () => {};
+let downloaded = null; globalThis.URL.createObjectURL = window.URL.createObjectURL = b => { downloaded = b; return 'blob:test'; }; globalThis.URL.revokeObjectURL = window.URL.revokeObjectURL = () => {}; window.HTMLAnchorElement.prototype.click = function () {};
 window.fetch = globalThis.fetch; window.Headers = globalThis.Headers; window.Request = globalThis.Request; window.Response = globalThis.Response;
 const require = createRequire(import.meta.url);
 const React = require('react'); const { createRoot } = require('react-dom/client'); const { act } = React;
@@ -74,7 +75,6 @@ await mount();
 ok(!!document.querySelector('.b-progress') && /heute geschafft|Freier Tag/.test(document.querySelector('.b-progress').textContent), 'Tagesring oben auf Heute');
 ok(document.querySelectorAll('.b-week .b-day').length === 7, 'Wochenleiste mit 7 Tagen');
 const order = [...document.querySelectorAll('main h2, main .b-progress')].map(e => e.classList.contains('b-progress') ? 'Ring' : e.textContent.trim());
-ok(order.indexOf('Ring') < order.indexOf('Als Nächstes') && order.indexOf('Als Nächstes') < order.indexOf('Gewohnheiten heute'), `Reihenfolge Ring, Als Nächstes, Gewohnheiten (${order.slice(0, 5).join(' > ')})`);
 let habitBtns = [...document.querySelectorAll('.b-habit')];
 ok(habitBtns.length >= 1, `Gewohnheiten auf Heute abhakbar (${habitBtns.length})`);
 const countText = () => (document.querySelector('#next-h') ? document.querySelector('#next-h').parentElement.textContent : '');
@@ -89,6 +89,13 @@ ok(!((await docsNow()).habits.habitLog || {})[hid], 'Zweiter Tipp öffnet sie wi
 const lp = document.querySelectorAll('.b-habit')[1] || document.querySelectorAll('.b-habit')[0];
 await act(async () => { lp.dispatchEvent(new window.Event('pointerdown', { bubbles: true })); await sleep(650); lp.dispatchEvent(new window.Event('pointerup', { bubbles: true })); lp.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); }); await wait(1100);
 ok(Object.values(((await docsNow()).habits.habitLog || {})).includes('skip'), 'Langes Drücken markiert „bewusst ausgelassen“');
+const skipBtn = document.querySelector('.b-skip');
+ok(!!skipBtn && skipBtn.textContent === 'Auslassen', 'Sichtbarer Knopf „Auslassen“ je Gewohnheit');
+const before2 = Object.values(((await docsNow()).habits.habitLog || {})).filter(v => v === 'skip').length;
+await click(skipBtn); await wait(1100);
+ok(Object.values(((await docsNow()).habits.habitLog || {})).filter(v => v === 'skip').length === before2 + 1, 'Auslassen per Knopf gespeichert');
+await click(byText('Zurücknehmen')); await wait(1100);
+ok(Object.values(((await docsNow()).habits.habitLog || {})).filter(v => v === 'skip').length === before2, 'Auslassen per Knopf zurückgenommen');
 await click(byText('Ideen für neue Gewohnheiten'));
 const nIdeas = document.querySelectorAll('.b-ideas li').length;
 ok(nIdeas >= 6, `Ideen für Gewohnheiten (${nIdeas})`);
@@ -119,6 +126,17 @@ else {
   ok(!!byText('Später fortsetzen'), '„Später fortsetzen“ statt „Schließen“');
   await click(byText('Später fortsetzen')); await wait(200);
 }
+// W9: nächster Schritt, Auslassen über Menü
+await click(tabsBtn(0)); await wait(200);
+const secs = [...document.querySelectorAll('main section')].map(x => x.classList.contains('b-next') ? 'Next' : x.classList.contains('b-progress') ? 'Ring' : (x.querySelector('h2') || {}).textContent);
+ok(secs.indexOf('Ring') >= 0 && secs.indexOf('Ring') < secs.indexOf('Als Nächstes') && (secs.indexOf('Next') === -1 || secs.indexOf('Next') < secs.indexOf('Ring')), `Reihenfolge nächster Schritt, Fortschritt, Als Nächstes (${secs.slice(0, 4).join(' > ')})`);
+const more = document.querySelector('.b-more');
+if (more) {
+  await click(more);
+  const skipBtn = byText('Heute auslassen') || byText('Wieder öffnen');
+  ok(!!skipBtn, 'Menü „⋯“ bietet Auslassen oder Wieder öffnen');
+  if (byText('Heute auslassen')) { await click(byText('Heute auslassen')); await wait(1100); ok(Object.values(((await docsNow()).habits.habitLog || {})).includes('skip'), 'Auslassen über das Menü gespeichert'); }
+}
 // Ernährung: Idee für heute und Zutaten-Katalog
 await click(tabsBtn(0)); await wait(200);
 ok(/Idee für heute/.test(document.querySelector('main').textContent), 'Heute zeigt eine Ernährungs-Idee');
@@ -145,8 +163,23 @@ const goalHead = [...document.querySelectorAll('.goal-head')].find(g => /Gewohnh
 ok(goalHead && !/%/.test(goalHead.textContent), `Woche: Gewohnheiten als Anzahl (${goalHead ? goalHead.textContent : '-'})`);
 // Info und Konto: Rechtliches
 await click(document.querySelector('button[aria-label="Über HealthOS"]')); await wait(100);
+const infoTxt = document.body.textContent;
+if (mode !== 'demo') ok(!/Keine Push-Benachrichtigungen/.test(infoTxt) && /Push-Erinnerungen: verfügbar/.test(infoTxt), 'Info nennt den tatsächlichen Funktionsstatus');
+ok(/Version /.test(infoTxt), 'Versionsstand sichtbar');
 const links = [...document.querySelectorAll('.legal-links a')].map(a => a.getAttribute('href'));
+if (mode !== 'demo') { ok(document.querySelectorAll('.b-status li').length >= 5 && /Push-Erinnerungen/.test(document.querySelector('.b-status').textContent), 'Info zeigt den zentralen Funktionsstand'); ok(/Version /.test(text()), 'Info zeigt die Version'); }
 if (mode !== 'demo') ok(links.includes('/impressum') && links.includes('/datenschutz'), `Impressum und Datenschutz verlinkt (${links.join(', ')})`);
+await click([...document.querySelectorAll('button')].find(b => /Schließen|Fertig/.test(b.textContent)) || document.body); await wait(100);
+// Einstellungen: vollständiger Export, Konto löschen
+await click(document.querySelector('button[aria-label="Einstellungen"]')); await wait(150);
+const exp = byText('Alle Daten exportieren');
+if (mode !== 'demo') {
+  ok(!!exp, 'Einstellungen: „Alle Daten exportieren“');
+  await click(exp); await wait(300);
+  const txt = downloaded ? await downloaded.text() : '';
+  ok(/"documents"/.test(txt) && /"koerper"|"settings"/.test(txt), `Export enthält alle gespeicherten Dokumente (${(txt.match(/"key"/g) || []).length} Dokumente)`);
+}
+if (mode === 'beta-db') ok(!!byText('Konto löschen'), 'Konto löschen angeboten');
 await act(async () => root.unmount());
 console.log(`\n${n - fails} von ${n} Klicktests bestanden (W5 ${mode})`);
 process.exit(fails ? 1 : 0);

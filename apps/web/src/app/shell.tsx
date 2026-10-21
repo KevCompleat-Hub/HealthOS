@@ -22,12 +22,19 @@ type Phase =
 
 export default function Shell() {
   const [demoReady, setDemoReady] = useState(false);
+  const [update, setUpdate] = useState(false);
   useEffect(() => {
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') navigator.serviceWorker.register('/sw.js').catch(() => {});
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+      // Hinweis auf neue Version: nur wenn schon eine ältere Version die Seite gesteuert hat
+      const hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) setUpdate(true); });
+      navigator.serviceWorker.register('/sw.js').then(reg => reg.update()).catch(() => {});
+    }
     if (MODE === 'demo') { configureBackend(browserBackend()); setDemoReady(true); }
   }, []);
-  if (MODE === 'demo') return demoReady ? <App /> : null;
-  return <BetaGate />;
+  const banner = update ? <div className="b-update" role="status"><span>Neue Version verfügbar</span><button className="btn small primary" onClick={() => window.location.reload()}>Neu laden</button></div> : null;
+  if (MODE === 'demo') return demoReady ? <>{banner}<App /></> : null;
+  return <>{banner}<BetaGate /></>;
 }
 
 function BetaGate() {

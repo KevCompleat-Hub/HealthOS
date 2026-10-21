@@ -145,6 +145,15 @@ patch('Diagramm: ganzzahlige Skala bei kleinen Werten', '{[0, max / 2].map((t, i
 patch('Diagramm: erreichtes Wochenziel voll eingefärbt', 'const weeks = trainingSeries(data, weekStart(today), 8, today);', 'const weeks = trainingSeries(data, weekStart(today), 8, today).map(x => (x.goal && x.value != null && x.value >= x.goal ? { ...x, faint: false } : x));');
 patch('Heute: Ernährungs-Idee und Zutaten-Katalog', '\n    <HabitsToday ctx={ctx} />\n', '\n    <HabitsToday ctx={ctx} />\n    <FoodTip ctx={ctx} />\n');
 patch('Einstellungen: Push-Erinnerungen', '    {ctx.account && <section className="block">\n      <h2 className="h2">Konto</h2>', '    {ctx.account && <PushSettings ctx={ctx} />}\n    {ctx.account && <section className="block">\n      <h2 className="h2">Konto</h2>');
+patch('Heute: Gewicht-Kachel mit Eintragen', "value={wt ? `${signed(wt.delta)} kg` : 'zu wenige Werte'} missing={!wt} sub={wt ? 'Ø 7 Tage ggü. Vorwoche' : 'je Woche 1 Wert nötig'} onClick={() => go('entwicklung')} />}", "value={wt ? `${signed(wt.delta)} kg` : 'Eintragen'} missing={!wt} sub={wt ? 'Ø 7 Tage ggü. Vorwoche' : 'tippen zum Eintragen'} onClick={() => (wt ? go('entwicklung') : go('erfassen', 'gewicht'))} />}");
+patch('Einrichtung: Ziele erklärt', '<Chips multi options={Object.entries(GOALS).filter(([k]) => !BETA.hiddenGoals.includes(k))} value={cfg.goals}', '<p className="hint">{BETA.goalHint}</p>\n      <Chips multi options={Object.entries(GOALS).filter(([k]) => !BETA.hiddenGoals.includes(k))} value={cfg.goals}');
+// ---------- W9: Launch-Hardening nach dem Audit vom 20.10.2026 ----------
+// (Zwei Patches aus einem unterbrochenen Zwischenstand übernommen: Gewicht-Kachel mit Eintragen, Ziele erklärt.)
+patch('Heute: Fortschritt von unten entfernen', '    <TodayProgress ctx={ctx} />\n', '');
+patch('Heute: nächster Schritt und Fortschritt ganz oben', '    <Celebrate ctx={ctx} />\n', '    <NextStep ctx={ctx} />\n    <TodayProgress ctx={ctx} />\n    <Celebrate ctx={ctx} />\n');
+patch('Export: alle gespeicherten Daten', "await dl.save({ filename: `healthos-plan-${today}.json`, data: JSON.stringify(buildExport(cfg, data, new Date().toISOString()), null, 2) });", 'await exportAllData({ account, today });');
+patch('Konto: Export, Löschen, Version', "<p className=\"legal-links\"><a href=\"/impressum\">Impressum</a><a href=\"/datenschutz\">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>\n      </div>\n    </section>}", "<p className=\"legal-links\"><a href=\"/impressum\">Impressum</a><a href=\"/datenschutz\">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>\n        <AccountExtras ctx={ctx} />\n      </div>\n    </section>}");
+patch('Info: Funktionsstand und Version', "{!BETA.demoData && <p className=\"legal-links\">", "{!BETA.demoData && <ul className=\"b-status\">{BETA.status.map(([f, st]) => <li key={f}><span>{f}</span><b>{st}</b></li>)}</ul>}\n      <p className=\"hint\">Version {APP_VERSION}</p>\n      {!BETA.demoData && <p className=\"legal-links\">");
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -166,6 +175,8 @@ import { usableOffer, fixText } from '../beta/review';
 import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
+import { NextStep } from '../beta/today';
+import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { ${[...used].sort().join(', ')} } = D;
 `;
 writeFileSync(path.join(root, 'apps/web/src/legacy/HealthOSApp.jsx'), header + ui + '\nexport { App, Onboarding, Settings, ReviewFlow };\n');
