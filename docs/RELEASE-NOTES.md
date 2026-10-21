@@ -1,5 +1,10 @@
 # Release Notes HealthOS Beta
 
+## 0.11.0-w13 (21.10.2026), Paket C: Priorität 2 ohne neue Datenarten
+- Goal-to-Action: unter Entwicklung „Deine Ziele im Zusammenhang“ je Ziel in Prioritätsreihenfolge mit Maßnahmen im Plan, Fortschritt (nur mit Daten), nächstem Check-in und einem nächsten Schritt. Erweitert den bestehenden Bereich „Ziele“.
+- Experimente: eine Gewohnheit 7, 14, 21 oder 30 Tage ausprobieren, Ziel 70 Prozent der Tage, am Ende „Als Gewohnheit behalten“ oder „Beenden“. Gespeichert an der Gewohnheit, kein neuer Speicher.
+- Muster: Umsetzung nach Wochentagen über 8 Wochen. Aussage erst mit genug Daten, ausdrücklich als Zusammenhang, nicht als Ursache.
+
 ## 0.10.0-w12 (21.10.2026), Paket B: Priorität 1 vervollständigt
 - Briefing: bis zu zwei Vorschläge mit Anlass, Begründung und Aktion (Gewicht bei Ziel „Abnehmen“, Trainingsziel in Gefahr, Gewohnheit im Rückstand, Rahmen einer begrenzten Gewohnheit erreicht). Ohne Datengrundlage kein Vorschlag.
 - Habit Stacking: Auslöser („nach dem Mittagessen“) und Tageszeit je Gewohnheit, Sortierung auf Heute nach Tageszeit.

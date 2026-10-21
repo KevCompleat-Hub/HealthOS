@@ -1,7 +1,7 @@
 8b74b3128a18057f79a4dc48672abcc484a909ab74280d0c409c2913885e570d  ./README.md
 1031f3f98ead488fda2b8a51d43872ec4fb34d41194380ed693f787c68cbc166  ./apps/web/README.md
 85d0c6516b6b0580b3e791248ca91137552255bc8d0b0abfd1903c670f04d368  ./apps/web/next.config.mjs
-1266e81f986071f73b23e5b67453553266d666a96d3f9e9582a6b4b027e99b08  ./apps/web/package.json
+0c7d17c72f8052869368a7857b7c68ea9adcdf188ac9fae9819ca643451faeea  ./apps/web/package.json
 faabcb7f4a12e35c79bff40b8263ae7572cdbccf9de888802e62e2953329f1f2  ./apps/web/public/icons/apple-touch-icon.png
 7c40a9d530ed3addd90267da3ee37689529011fd579fa6054e91a800a1f1e45d  ./apps/web/public/icons/icon-192.png
 5f1155e47859e9805b9496218bd9f8f3166f21139e0ddbe0cb4548b3d078d1cc  ./apps/web/public/icons/icon-512-maskable.png
@@ -10,7 +10,7 @@ d1f2ef616c3bc2c34c5fa37c48ccbf0fe337f01af47c532c8d7513371ad1ce36  ./apps/web/pub
 c75cf1d04c39ab0f95294379a620845961e3d0c8e267fe0d60a5a9fbc6007508  ./apps/web/public/sw.js
 af06091b6a456d3814b5b132263769eab8e32621e0b844f519f92b556686b3ec  ./apps/web/src/app/api/rezepte/route.ts
 13d79438951f9343f9353ba164f4e7bf974b596f1d531978ec6f861a4851532f  ./apps/web/src/app/api/waage/route.ts
-3c10add12adad4f7cffe8149c9b6612983e515fbc4d3978032438a643ae6259b  ./apps/web/src/app/beta.css
+bd2c8380180e981a1cecd80fbd14ca7c5e1968b9f150c584122c76cd68c6226b  ./apps/web/src/app/beta.css
 6e8f30fcda5a94e870cd195dd2dd22e4e241062aa3cdedf48e044130aae9927b  ./apps/web/src/app/datenschutz/page.tsx
 6870f9b7af28dd313834978d2f45c5db47ccd286769397d1de51b9a5ce229741  ./apps/web/src/app/impressum/page.tsx
 9eca6035a20f8763eac30f8152002a43f2ed125ade697a7ab5ea3088c89faf1a  ./apps/web/src/app/layout.tsx
@@ -23,6 +23,7 @@ c323777f1fb6f68166444ae7b8b9fd43fe133088ef30f55a1bc01217faf5d152  ./apps/web/src
 7eb1ebe6f61a4e5c5feded0945f8892fe900eaef3de4250fc1bdd502c19090ac  ./apps/web/src/beta/briefing.jsx
 c88e5b1aceb4f5d276bf0dc603ee6d46390503a9899f12268cf51f800f5f922c  ./apps/web/src/beta/food.jsx
 10f8431a7d4dd45ac5d62401dc1a8dfc79546fa54e6e9f8f842b45c3421950e5  ./apps/web/src/beta/foodCatalog.js
+7170421f24433a7a1d067d4a2f508ce0d512215f26f501a6570be011eb8b1825  ./apps/web/src/beta/goals.jsx
 482e5506c4d63598e42bdf40d8f9ce10cc6ab30c70af3da539b2c1caca284a98  ./apps/web/src/beta/logging.jsx
 72c1e374671d56e5fa24435310620b2734e6b64ef6c8b9d54608a62dcc06ead9  ./apps/web/src/beta/push.jsx
 280b54ce6b3d44c87100ecd3debc049c0175a0138b44e1cbe6bf5bf0872128bd  ./apps/web/src/beta/review.js
@@ -30,7 +31,7 @@ c88e5b1aceb4f5d276bf0dc603ee6d46390503a9899f12268cf51f800f5f922c  ./apps/web/src
 cfc51dceb84a0ba41063dff0b3edc1ece7525d5bb4957fe8dc6f7a4b033bfc6b  ./apps/web/src/beta/today.jsx
 87135e8d6ec406b1b1d5653200e8384d0576593d7f538d47a0fcb18302434a35  ./apps/web/src/beta/weight.jsx
 2c86814a8c092f9bf768de8087cb3d5a0e22853f3d6eb45f0db8d37eaedb0c89  ./apps/web/src/features.js
-9c48977c5761bf3ce0bc1b38373c762031b53ff6a9a77e0e45cd516888d85aa8  ./apps/web/src/legacy/HealthOSApp.jsx
+5727235143d656878bada4e8c3674b1f3abf432bf67b73808192c9175a9d5b81  ./apps/web/src/legacy/HealthOSApp.jsx
 b3f650a9a819bf899f687b1d403259c81e71d7540e380841e7c0e4acf0c306f5  ./apps/web/src/legacy/support.js
 9750d958a895151105d8adcaa6e8542ca1693f7c0c6347630f76d46099f419a7  ./apps/web/src/lib/supabase.ts
 2f8f50a8e435abf3dcbd79115f88bf80da513c20414e46dd35d5bedb6b074a40  ./apps/web/src/server/recipes.ts
@@ -42,11 +43,12 @@ b2520ead5e7593adc208233b57071163e3c83410c4af662dbcf4d171e324919f  ./apps/web/src
 19d2ee3d43e0b9d39ef0391e43b275785c7bcc1af7e4e2c68b2ae97a6a30b98b  ./apps/web/test/briefing.mjs
 d1a5c209f3838551af59f7083a996f0bf8a866a06521bc040fe0d50a3bbef297  ./apps/web/test/db.mjs
 a6c22ceb28a97394b4964da8158bfed620da6e731d9a43a7a38e0d3e4be70956  ./apps/web/test/dbstand.mjs
+1af78f1df50162a3b9d733b4307885eb3d76036ed0011022beb7111687e98be5  ./apps/web/test/goals.mjs
 e8e3e9cac15a1e7f2bac5c83762cfc11ab71d7dd9ceae2f9a637c93eca5e8357  ./apps/web/test/push.mjs
 9b003aa31323afa8a063983c2063011e8eb13d5989eee3d27ca669efe98db8ab  ./apps/web/test/recipes.mjs
-11918e1044a453c6caed1e49f675ffdb5457e592200ec8e5b895b72de69d57e8  ./apps/web/test/run-all.mjs
+2e61eaab7cf234621f7721ab23f6174e3a47058538df03215f4f6ecf1cb03dad  ./apps/web/test/run-all.mjs
 c3330c87e71ec137d0ded900d4e04a96f9a76ae897bf09a3cc19ea3dc92b987d  ./apps/web/test/scale.mjs
-f51f5d01e95648b64a55f0b5bb6aec5f7f658144b57b305cdc6501e12c5c5f70  ./apps/web/test/ui-w5.mjs
+509426c273fd0f97548cad758448e81139c78422f7678ba7c32f97e89bc15210  ./apps/web/test/ui-w5.mjs
 479f37f5a38315eb2f8d3b309dd6f6700e2e9c8221543b447af011fdb5b5f63a  ./apps/web/test/ui.mjs
 039c5c007dfeb3c76d5f12df05267850d90a11549e916dd2d97770d6da3ac435  ./apps/web/tsconfig.json
 648c774f437978e4c9b9121f8f11f846dc0471143fab6d1577d2d9f4069df54c  ./apps/web/vercel.json
@@ -56,10 +58,10 @@ b4a2085f51416efa60226d4a2c6e76079bd0e5dbd948226167b8f435e302ace5  ./docs/FUNKTIO
 815b0e8b16f10114e7b8ccaafbada68916348d0bd76966f957b2f687672b4bb4  ./docs/LAUNCH-HARDENING-BERICHT.md
 4a5e5a3d6bf968f38af8b84cfb22bb83b9b0df5fdb1d840cc150f3a2f1787cfb  ./docs/M1-ABNAHMEBERICHT.md
 8ffaa7c2a892bf80969aab3e4f9e226a785e43f3b115b358aa11a937b80590bd  ./docs/RELEASE-GATES.md
-c55d24f6d2c91d28d6f84a62f89bbcc1294e1fb3742a07ecce69c20b84b40aa1  ./docs/RELEASE-NOTES.md
+bd8c919b47de3951ec9f23cf143f4cea5e8d896c07b3cbf7e9133431c0e4f86a  ./docs/RELEASE-NOTES.md
 6216cb531daaccb7cc9269786ff357bab55d2bb6330b9b33503c3a1e2d030be3  ./docs/TESTERGEBNISSE.md
 792b0975182582d926f2bb7e5bb8e6d47f2021265cc26553b8b6f3a61c2d7b7d  ./docs/TESTMETHODIK.md
-e06ec4de6dd2021b6f7c18243259eccf91148fe504c3768b68b56a111f9b9b4f  ./package.json
+be678ec8d0da05731a451f0cd72fe51bcb323947cce6a0b1888946380eb972c8  ./package.json
 c833eb826d510b9fbe39825be27a2a50b5f8329be434d01476193f3888d72675  ./packages/domain/package.json
 d3cc39a65ec6d26c4124846c1b991acdf639ce50bffb8177299585b16338574c  ./packages/domain/src/actions.ts
 5f07ffb34eca94c3c06a247a710d892bb2f8e1b7411b7c93467a09fed431fb01  ./packages/domain/src/catalog.ts
@@ -67,7 +69,7 @@ d3cc39a65ec6d26c4124846c1b991acdf639ce50bffb8177299585b16338574c  ./packages/dom
 8a42f8a7f46fce7c98af5f7938750bc0d14bc26c142bc6b900b8735f15146b06  ./packages/domain/src/demo/seed.ts
 7c39df5d8f0f7ac1677eba982ef7f691f8c2e3cc97f161fc347d3213bc9f4f4e  ./packages/domain/src/index.ts
 010e1a9a1f6a7ba9638d4d3e475e89a37a60a315836ade95014586842773d600  ./packages/domain/src/intelligence.ts
-f2c6bf6a1364ca8b76d7f1c988680cc2e01e5ba8c5a101f030303d3b08ccebb5  ./packages/domain/src/io.ts
+eb54a8a585a7782b93821f2629364f87af000c335ad14658ca70005b9b5d08b9  ./packages/domain/src/io.ts
 2f677894becaf17bbaf721a0596ef10baa4d4361018eee5e6224607a668188af  ./packages/domain/src/plan/build.ts
 24eaedcec5536616ab70576972e256c580a7c4a5a06c0411d5cefea9014a9035  ./packages/domain/src/plan/materialize.ts
 7e23e57891e905ebf1bd26ee5e86f6c04a416ee78a951c47aed42ccc92c93430  ./packages/domain/src/plan/routines.ts
@@ -78,11 +80,11 @@ f7fdfad957189ce543cfc04aefee202d6081a3329e1b6ad0f2c088a30839be9c  ./packages/dom
 469ffedd2c86e520a29d12211b7f4bd0b046901a6ce2b0dd0c93a4c7ad4f4f4d  ./packages/domain/src/review/schedule.ts
 87fe52003d7c396e056131452f3de646e101303ce3b02876b6438b533e40a279  ./packages/domain/src/status.ts
 0e8dc79fcc8af958c47de529984163068543b1d8fe39f1fb49af1e34e3c1b468  ./packages/domain/src/trend.ts
-95ef782381343e7538575b600b39d6964a6a77518daee55b088f645068d3b317  ./packages/domain/src/types.ts
+4c220a99b0e8e08a1538144fd6b906a617e8ec670c6a2bdc88d75a61baefd35f  ./packages/domain/src/types.ts
 a838fd7794a1ff19aa3189421bf40c11004982fe1a83e69e7ddb816ab7607079  ./packages/domain/src/util/date.ts
 f1f9562d7e5e81159cf02ca1a0f176e834b93c3768074ff07ddc6e2bf4dfb7bd  ./packages/domain/src/util/ids.ts
 5881dedc104e370f1de346df80f22bda58fb3c89f05aa2b19de0dda9a1b58520  ./packages/domain/test/frequency.test.ts
-2402fbe0d87dd6c8da8a94b69fb86fda5f7a38e67d9103856855504436b31a4c  ./packages/domain/test/limit.test.ts
+9e849d1fcbdba6092f8938aba58bfa75336d5b471f35f97ef43d698481f30925  ./packages/domain/test/limit.test.ts
 27ae40967e87b34481fab4d5a797fc05cb08ffe50e1e673b860a921772a6ba63  ./packages/domain/test/rules.test.ts
 47da9662380f63e3a745a48325c4451f02970094d64676e0b33b23874e3aab7a  ./packages/domain/test/trend.test.ts
 baf84520c0301836a94e600b3cdf15bfbd71931482cb8f8987e7719d66a1c336  ./packages/domain/tsconfig.json
@@ -121,7 +123,7 @@ ba4dbf6b58695cb92b8755da97da755b4cbb08e0da0235fbd2e5a4c899705e39  ./supabase/tes
 6c9c2b11e0a9bc99cf560a1576a01e14f330f505a0057f474196ac4cf91f8c52  ./supabase/tests/live_rls_rollback.sql
 c5fb6cde2495f80535934bc7c53da24e7ca8c6fd18dce0e28889728bbc07f956  ./supabase/tests/push.sql
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./tools/.keep
-6508577110066fcb6cecf12f7d24788a22dc400b0f04e8a77a20370ce0440dcc  ./tools/build-web-ui.mjs
+cb1de9415046bb3b4d593957d52f37815106701d39862ddb5623b3c64c05b4bb  ./tools/build-web-ui.mjs
 8011189de94330a97778c15a28c87edebd1c33e11bfc9a661ef78e0cfab72d12  ./tools/coverage-map.mjs
 39a3434168308f06212066351c6dc1cdad559b84f32e19a1f0a0da05556387a7  ./tools/extract-catalog.py
 0ef25eef0bfd0f20ad34ea523cefa970a3808ddd90a9dbd6f4b6ad47a5228331  ./tools/package.sh

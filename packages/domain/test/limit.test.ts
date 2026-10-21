@@ -17,6 +17,14 @@ describe('Begrenzte Gewohnheiten', () => {
     expect(habitStats(st, '2026-10-19', '2026-10-25')).toEqual(habitStats(base([water], { 'h-wasser|2026-10-19': 'done' }), '2026-10-19', '2026-10-25'));
     expect(habitAdherence(st, '2026-10-19', '2026-10-25', '2026-10-26').per.some(p => p.id === 'c-snack')).toBe(false);
   });
+  it('Export und Import erhalten ein Experiment, ungültige werden verworfen', () => {
+    const ex: Habit = { id: 'c-geh', name: 'Gehen', custom: true, active: true, experiment: { from: '2026-10-19', days: 14, minDays: 10 } };
+    const bad: Habit = { id: 'c-x', name: 'X', custom: true, active: true, experiment: { from: 'gestern', days: 99, minDays: 3 } };
+    const r = parseImport(JSON.parse(JSON.stringify(buildExport(undefined, base([ex, bad], {}), 'x'))));
+    if ('error' in r) throw new Error(r.error);
+    expect(r.state.habits.find(h => h.id === 'c-geh')!.experiment).toEqual({ from: '2026-10-19', days: 14, minDays: 10 });
+    expect(r.state.habits.find(h => h.id === 'c-x')!.experiment).toBeUndefined();
+  });
   it('Export und Import erhalten Rahmen, Alternative, Auslöser und Tageszeit', () => {
     const r = parseImport(JSON.parse(JSON.stringify(buildExport(undefined, base([snack, water], {}), 'x'))));
     if ('error' in r) throw new Error(r.error);

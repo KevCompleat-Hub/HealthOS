@@ -174,6 +174,14 @@ ok(!/Kalorien/.test(document.querySelector('main').textContent), 'Entwicklung oh
 if (mode === 'demo') ok(/Gewichtstrend/.test(document.querySelector('main').textContent) && !!document.querySelector('.b-wt-line'), 'Entwicklung zeigt geglätteten Gewichtstrend');
 ok(!/Gesundheit, Für dich/.test(document.querySelector('main').textContent), 'Kein Verweis auf den ausgeblendeten Bereich „Für dich“');
 ok(!!document.querySelector('.b-review-entry'), 'Entwicklung hat einen festen Einstieg in den Check-in');
+ok(/Deine Ziele im Zusammenhang/.test(document.querySelector('main').textContent) && document.querySelectorAll('.b-chain-goal').length >= 1, 'Entwicklung zeigt die Zielkette');
+ok(/Muster/.test(document.querySelector('main').textContent), 'Entwicklung zeigt den Bereich Muster');
+await click(byText('Experiment starten')); await wait(100);
+const expSel = document.querySelector('#exp-h').parentElement.querySelector('select');
+await act(async () => { expSel.value = expSel.options[1].value; expSel.dispatchEvent(new window.Event('change', { bubbles: true })); });
+await click(byText('Starten')); await wait(1100);
+ok(((await docsNow()).habits.habits || []).some(h => h.experiment && h.experiment.days === 14 && h.experiment.minDays === 10), 'Experiment über die Oberfläche gestartet und gespeichert');
+ok(/Tag 1 von 14/.test(document.querySelector('#exp-h').parentElement.textContent), 'Laufendes Experiment wird angezeigt');
 // Woche: Gewohnheiten als Anzahl statt Prozent
 await click(tabsBtn(1)); await wait(200);
 const goalHead = [...document.querySelectorAll('.goal-head')].find(g => /Gewohnheiten/.test(g.textContent));

@@ -173,6 +173,8 @@ for (const phrase of ['HealthOS behauptet keinen Zusammenhang', 'Verpasst zählt
 // ---------- W12: Paket B ----------
 patch('Heute: Alternative nach zweimal verpasst', '    <Briefing ctx={ctx} />\n', '    <Briefing ctx={ctx} />\n    <AltCard ctx={ctx} />\n');
 patch('Erfassen: Training mit einem Tipp wiederholen', "{seg === 'training' && <TrainingForm ctx={ctx} />}", "{seg === 'training' && <><QuickRepeat ctx={ctx} /><TrainingForm ctx={ctx} /></>}");
+// ---------- W13: Paket C ----------
+patch('Entwicklung: Zielkette, Experimente, Muster', '    <h2 className="h2 block">Verläufe</h2>', '    <section className="block"><GoalChain ctx={ctx} /></section>\n    <Experiments ctx={ctx} />\n    <Patterns ctx={ctx} />\n\n    <h2 className="h2 block">Verläufe</h2>');
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -197,6 +199,7 @@ import { PushSettings } from '../beta/push';
 import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
 import { Briefing, AltCard } from '../beta/briefing';
 import { QuickRepeat } from '../beta/logging';
+import { GoalChain, Experiments, Patterns } from '../beta/goals';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { ${[...used].sort().join(', ')} } = D;

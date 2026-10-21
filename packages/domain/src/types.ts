@@ -119,7 +119,9 @@ export interface Habit { id: string; name: string; lib?: string; active?: boolea
   /** W12: „limit“ = Gewohnheit, die begrenzt werden soll. Haken bedeutet „heute passiert“. */ kind?: 'limit';
   /** W12: höchstens so oft pro Woche (0 bis 6), nur bei kind „limit“. */ limitPerWeek?: number;
   /** W12: Auslöser, zum Beispiel „nach dem Mittagessen“, und Tageszeit für die Sortierung. */ trigger?: string; daytime?: 'morgens' | 'mittags' | 'abends';
-  /** W12: Alternative, die statt der begrenzten Gewohnheit helfen soll. */ alternative?: string }
+  /** W12: Alternative, die statt der begrenzten Gewohnheit helfen soll. */ alternative?: string;
+  /** W13: Experiment mit Laufzeit und Kriterium. Entscheidung am Ende: behalten oder beenden. */ experiment?: Experiment }
+export interface Experiment { from: ISODate; days: number; minDays: number; decision?: 'behalten' | 'beendet'; decidedAt?: ISODate }
 export type HabitLog = Record<string, HabitMark>;
 
 /* ---------- Erfassen (in der Referenz nur fiktive Demo-Daten) ---------- */
