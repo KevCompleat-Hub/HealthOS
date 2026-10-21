@@ -124,3 +124,8 @@
 .b-wt{width:100%;height:auto;display:block;margin:6px 0}
 .b-wt-raw{fill:var(--muted);opacity:.55}
 .b-wt-line{fill:none;stroke:var(--primary);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.b-terms{display:grid;gap:8px;margin:6px 0 10px}
+.b-terms dt{font-weight:700}
+.b-terms dd{margin:2px 0 0;color:var(--muted);font-size:.9375rem}
+.b-review-entry{margin-top:10px}
+.b-more-info summary{font-size:.8125rem;color:var(--muted);cursor:pointer}

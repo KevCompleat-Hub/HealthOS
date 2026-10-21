@@ -8,15 +8,15 @@ Legende: **bestätigt** = im Code oder live nachgewiesen, **nicht bestätigt** =
 | Nr. | Befund | Prüfung | Stand |
 | --- | --- | --- | --- |
 | P0-01 | Rechtstexte unvollständig | bestätigt, Platzhalter für Verantwortlichen, Anschrift, Kontakt, Fristen | **offen, Freigabe-Sperre.** Nur durch dich bzw. rechtliche Prüfung lösbar |
-| P0-02 | Standort und Datentransfer ungeklärt | bestätigt: Supabase London (Entscheidung E-9), KI über Anthropic | **offen, Freigabe-Sperre.** Rechtliche Bewertung nötig |
+| P0-02 | Standort und Datentransfer ungeklärt | bestätigt: Supabase London (Entscheidung E-9), KI über Anthropic | **Standort erledigt:** Umzug nach Frankfurt (E-15). **Offen:** rechtliche Bewertung der KI-Übermittlung an Anthropic |
 | P0-03 | Nutzertrennung nicht live nachgewiesen | bestätigt als Lücke | **erledigt:** Live-Prüfung in Supabase, 16 von 16, vollständig zurückgerollt (`supabase/tests/live_rls_rollback.sql`). Zweiter Faktor bewusst entfernt (E-10), optional anbieten bleibt offen |
 | P0-04 | Repository öffentlich, Passwort im Chat geteilt | **öffentlich bestätigt.** Geheimnis-Prüfung: keine Schlüssel im Code | **offen:** Repository auf privat stellen, Testpasswort ändern (nur durch dich) |
-| P1-01 | Erste Sitzung erklärungslastig | teilweise bestätigt | Ziele werden jetzt erklärt. Kürzeres Onboarding offen |
-| P1-02 | Begriffe Routine, Termin, Gewohnheit | bestätigt als UX-Thema | offen, Teil des Plans für Phase 1 |
+| P1-01 | Erste Sitzung erklärungslastig | teilweise bestätigt | **erledigt (W11):** Onboarding 4 Schritte, Ziele und Begriffe erklärt |
+| P1-02 | Begriffe Routine, Termin, Gewohnheit | bestätigt als UX-Thema | **erledigt (W11):** Begriffe im Info-Dialog und im Onboarding |
 | P1-03 | Heute priorisiert Zähler statt Handlung | bestätigt | **erledigt:** „Dein nächster Schritt“ mit einer Aktion oben, neutraler Text bei 0 |
 | P1-04 | Auslassen nur per Langdruck | bestätigt | **erledigt:** Menü „⋯“ je Gewohnheit, auch per Tastatur und Bildschirmleser |
 | P1-05 | Leere Kacheln ohne direkten Einstieg | teilweise: Schritte hatten schon „tippen zum Eintragen“ | **erledigt** für Gewicht |
-| P1-06 | Reviews schwer erreichbar | nicht live geprüft | offen |
+| P1-06 | Reviews schwer erreichbar | bestätigt | **erledigt (W11):** fester Einstieg unter Entwicklung |
 | P1-07 | Funktionsstand inkonsistent | bestätigt (Hinweistext leer seit W6, Demo-Text „keine Push“) | **erledigt:** zentraler Funktionsstand im Info-Dialog |
 | P1-08 | Umfang der Ernährung unklar | bestätigt | **erledigt** im Funktionsstand: „keine Kalorien- oder Mahlzeitenerfassung“ |
 | P1-09 | Mobile Prüfmatrix fehlt | bestätigt | **offen:** Geräte-Test nur durch dich möglich |

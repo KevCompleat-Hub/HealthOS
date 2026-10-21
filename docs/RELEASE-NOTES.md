@@ -1,5 +1,14 @@
 # Release Notes HealthOS Beta
 
+## 0.9.0-w11 (21.10.2026), Paket A: Beta stabilisieren, Umzug nach Frankfurt
+- Datenbank und Dienste laufen in Frankfurt (eu-central-1). Datenschutzerklärung und Entscheidungen angepasst (E-15).
+- Onboarding auf 4 Schritte: Ziele, Arbeitsalltag, Training, Plan mit Vorschau. Pausen, Ernährung und Erinnerungen mit Voreinstellungen, änderbar in den Einstellungen. Gewohnheiten werden weiter passend zu den Zielen vorgeschlagen.
+- Begriffe Termin, Routine, Gewohnheit und Messung im Info-Dialog und im Plan-Schritt erklärt.
+- Heute: „Alle Einträge heute“ zeigt, wie viele davon schon oben stehen. Pausen-Kachel erklärt „ab Planstart“ in der ersten Woche. „Idee für heute“ nur bei passenden Zielen oder an Trainingstagen.
+- Entwicklung: fester Einstieg in den Wochen-Check-in, mit „Jetzt starten“ oder dem nächsten Termin.
+- Verschieben: Hinweis, wenn ein Training aus dem Wochenziel fallen würde.
+- Lange Absicherungstexte hinter „Mehr dazu“, Speicherhinweis in Alltagssprache, überlappende Diagrammbeschriftungen behoben.
+
 ## 0.8.0-w10 (21.10.2026), Morning Briefing und Gewichtstrend
 - Heute: „Dein Tag“ mit höchstens drei Aussagen. Was heute ansteht, was zuletzt gut lief (nur mit Datengrundlage: Trainingsserie, Trainingsziel der Vorwoche, sinkender Gewichtstrend bei Ziel „Abnehmen“, mehr erledigte Gewohnheiten) und eine Handlung mit Knopf.
 - Entwicklung: geglätteter Gewichtstrend (Durchschnitt der letzten 7 Kalendertage je Messtag, Lücken werden nicht aufgefüllt). Veränderung nur mit mindestens 3 Messungen am Anfang und am Ende von 2 Wochen.

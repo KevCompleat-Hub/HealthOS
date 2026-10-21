@@ -1,7 +1,8 @@
 'use client';
 // Motivations-Bausteine für „Heute“ (Beta). Rechnen nur mit Funktionen des M1-Kerns, ändern keine Fachregeln.
 import React, { useEffect, useRef, useState } from 'react';
-import { A, addDays, classOfItem, goalAt, habitOn, nextActions, pausedAll, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, WD } from '@healthos/domain';
+import { A, addDays, classOfItem, goalAt, habitOn, nextActions, nextWeeklyDate, pausedAll, planStart, reviewOffer, dayLabel, trainingsInWeek, weekCoverage, weekDays, weekStart, weeklyTarget, WD } from '@healthos/domain';
+import { usableOffer } from './review';
 import { FEATURES as BETA } from '../features';
 
 const vibrate = p => { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch { /* ohne Vibration */ } };
@@ -175,5 +176,25 @@ export function Celebrate({ ctx }) {
   return <div className="b-celebrate" role="status" onClick={() => setShow(null)}>
     <span className="b-burst" aria-hidden="true">★</span>
     <div><b>{show.title}</b><p>{show.text}</p></div>
+  </div>;
+}
+
+/** Untertitel der Pausen-Kachel: in der ersten Woche zählt nur ab Planstart (erklärt „von 4“ statt 5). */
+export function pauseSub(data, today, ps) {
+  if (!ps.eligible) return 'werktags';
+  if (ps.done >= ps.eligible) return 'alle geschafft';
+  const ps0 = planStart(data);
+  return `noch ${ps.eligible - ps.done} diese Woche${ps0 && ps0 > weekStart(today) ? ', ab Planstart' : ''}`;
+}
+
+/** Fester Einstieg in den Wochen-Check-in unter „Entwicklung“: jetzt starten oder nächster Termin. */
+export function ReviewEntry({ ctx }) {
+  const { data, cfg, today, nowMin, startReview } = ctx;
+  const offer = usableOffer(reviewOffer(data, cfg, today, nowMin), data, today);
+  const next = nextWeeklyDate(today, cfg, data);
+  return <div className="panel b-review-entry">
+    {offer ? <><p className="top0"><b>{offer.label}</b><br /><span className="muted">{offer.kind === 'week' ? 'Kurz, etwa 3 bis 5 Minuten. Du kannst unterwegs auf die Kurzfassung wechseln.' : 'Ausführlicher, etwa 10 bis 15 Minuten.'}</span></p>
+      <div className="btn-row"><button className="btn primary small" onClick={() => startReview(offer)}>Jetzt starten</button></div></>
+      : <p className="top0 muted">{next ? `Nächster Wochen-Check-in: ${dayLabel(next, today)}. Er erscheint dann auch auf Heute.` : 'Der nächste Check-in erscheint, sobald eine Woche mit Plan vorliegt.'}</p>}
   </div>;
 }

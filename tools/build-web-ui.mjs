@@ -157,6 +157,19 @@ patch('Info: Funktionsstand und Version', "{!BETA.demoData && <p className=\"leg
 // ---------- W10: Morning Briefing und Gewichtstrend ----------
 patch('Heute: Morning Briefing statt einzelnem nächsten Schritt', '    <NextStep ctx={ctx} />\n', '    <Briefing ctx={ctx} />\n');
 patch('Entwicklung: geglätteter Gewichtstrend', "Ersten Wert erfassen</button>} />}\n      </div>\n    </section>}", "Ersten Wert erfassen</button>} />}\n      </div>\n    </section>}\n    {BETA.weight && <WeightTrendCard ctx={ctx} />}");
+// ---------- W11: Paket A, Beta stabilisieren ----------
+patch('Onboarding auf 4 Schritte', "  ['plan', 'Dein Wochenplan', 'Prüfe den Vorschlag. Alles bleibt später in den Einstellungen änderbar.'],\n];", "  ['plan', 'Dein Wochenplan', 'Prüfe den Vorschlag. Termine haben eine Uhrzeit, Gewohnheiten nicht. Pausen, Gewicht und Erinnerungen stellst du später in den Einstellungen ein. In der Beta gibt es keine Mahlzeitenerfassung.'],\n].filter(([k]) => !BETA.obSkip.includes(k));");
+patch('Onboarding: Gewohnheiten vorschlagen auch ohne Ernährungsschritt', "if (k === 'ernaehrung' && !touched)", "if ((k === 'ernaehrung' || (k === 'plan' && BETA.obSkip.includes('ernaehrung'))) && !touched)");
+patch('Heute: Pausen-Kachel ab Planstart erklärt', "sub={ps.eligible && ps.done >= ps.eligible ? 'alle geschafft' : ps.eligible ? `noch ${ps.eligible - ps.done} diese Woche` : 'werktags'}", "sub={pauseSub(data, today, ps)}");
+patch('Heute: „Ganzer Tag“ ohne Doppelung', '<summary><span>Ganzer Tag</span><span className="muted">{todays.length} {todays.length === 1 ? \'Eintrag\' : \'Einträge\'}</span></summary>', '<summary><span>Alle Einträge heute</span><span className="muted">{todays.length} {todays.length === 1 ? \'Eintrag\' : \'Einträge\'}, {next.length} davon oben</span></summary>');
+patch('Verschieben: Hinweis zum Wochenziel', "        {it.routine && <p className=\"hint\">Gilt nur für diesen Termin. Die Routine bleibt unverändert.</p>}", "        {it.routine && <p className=\"hint\">Gilt nur für diesen Termin. Die Routine bleibt unverändert.</p>}\n        {it.type === 'training' && moveOpts.some(d => d > addDays(weekStart(it.date), 6)) && <p className=\"hint\">Tage ab dem nächsten Montag zählen nicht mehr für das Wochenziel dieser Woche.</p>}");
+patch('Diagramm: Beschriftungen ohne Überlappung', '{(i % every === 0 || i === data.length - 1) && <text', '{((i % every === 0 && data.length - 1 - i >= Math.ceil(every / 2)) || i === data.length - 1) && <text');
+patch('Entwicklung: fester Einstieg in den Check-in', '<Empty text="Noch keine Reviews. Dein erster Check-in erscheint auf Heute, sobald eine Woche mit Plan vorliegt." />}', '<Empty text="Noch keine Reviews." />}\n      <ReviewEntry ctx={ctx} />');
+patch('Info: Begriffe erklärt', '      <p className="hint">Version {APP_VERSION}</p>', '      {!BETA.demoData && <><h3 className="h3">Begriffe</h3><dl className="b-terms">{BETA.terms.map(([t, d]) => <div key={t}><dt>{t}</dt><dd>{d}</dd></div>)}</dl></>}\n      <p className="hint">Version {APP_VERSION}</p>');
+for (const phrase of ['HealthOS behauptet keinen Zusammenhang', 'Verpasst zählt als nicht erledigt', 'Verpasste Tagesaufgaben erzeugen keine Hinweise']) {
+  const l = ui.split('\n').find(x => x.includes(phrase) && /<p className="(hint|muted)[^"]*">/.test(x));
+  if (l) patch(`Absicherungstext hinter „Mehr dazu“: ${phrase}`, l, l.replace(/^(\s*)(.*)$/, '$1<details className="b-more-info"><summary>Mehr dazu</summary>$2</details>'));
+}
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -178,7 +191,7 @@ import { usableOffer, fixText } from '../beta/review';
 import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
-import { NextStep } from '../beta/today';
+import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
 import { Briefing } from '../beta/briefing';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';

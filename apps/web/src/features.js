@@ -17,7 +17,7 @@ export const FEATURES = {
     : 'Erfasst werden Training, Schritte und Gewicht. Mahlzeiten und Blutwerte sind in der Beta ausgeschaltet.',
   storageText: mode === 'demo'
     ? 'Entwicklungs-Demo: Einstellungen, Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund, Training, Schritte und Gewicht bleiben nur in diesem Browser.'
-    : 'Gespeichert werden Einstellungen, Routinen mit Versionen, Wochenplan mit Status, Gewohnheiten, Pausen ohne Grund, Reviews ohne Antworten, Training, Schritte sowie Gewicht und Körperwerte, privat für dein Konto. Nicht gespeichert werden Mahlzeiten, Blutwerte, Termine und Dokumente.',
+    : 'Gespeichert werden deine Einstellungen, dein Wochenplan mit Routinen, deine Gewohnheiten und Pausen (ohne Angabe eines Grundes), die Ergebnisse deiner Reviews (nicht deine Antworten), Trainings, Schritte, Gewicht und Körperwerte. Alles nur für dein Konto, auf Servern in Frankfurt. Nicht gespeichert werden Mahlzeiten, Blutwerte, Arzttermine und Dokumente.',
 };
 
 /** Beschränkt Einstellungen auf den Beta-Umfang: keine Kalorien- und Gewichtserfassung, keine ausgeblendeten Ziele. */
@@ -81,3 +81,13 @@ FEATURES.info.works = 'Einrichtung, automatischer Wochenplan, Routinen mit Versi
 FEATURES.version = process.env.NEXT_PUBLIC_APP_VERSION || 'Entwicklung';
 /** Kurze Erklärung der Ziele im Onboarding (Audit P2). */
 FEATURES.goalHint = '„Fitter werden“ heißt Kondition und Kraft durch Training. „Mehr Bewegung“ heißt weniger Sitzen und mehr Alltagsbewegung. Beides zusammen ist möglich. Die Reihenfolge bestimmt, worauf die App zuerst achtet.';
+
+/** Begriffe, im Info-Dialog erklärt (Audit P1-02). */
+FEATURES.terms = [
+  ['Termin', 'Ein Eintrag mit Tag und Uhrzeit, zum Beispiel Training am Mittwoch um 18:30.'],
+  ['Routine', 'Die Regel, die Termine erzeugt, zum Beispiel „Krafttraining jeden Mittwoch“. Änderst du eine Routine, ändern sich die künftigen Termine.'],
+  ['Gewohnheit', 'Etwas, das du täglich oder einige Male pro Woche tust, ohne feste Uhrzeit. Du hakst sie einfach ab.'],
+  ['Messung', 'Werte, die du erfasst: Gewicht, Schritte, Trainingseinheiten.'],
+];
+/** Onboarding auf 4 Schritte: Pausen, Ernährung und Erinnerungen nutzen Voreinstellungen und bleiben in den Einstellungen änderbar. */
+FEATURES.obSkip = ['pausen', 'ernaehrung', 'erinnerungen'];

@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 106, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 116, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -12,7 +12,7 @@ import { usableOffer, fixText } from '../beta/review';
 import { ScaleImport, WeightQuick } from '../beta/scale';
 import { FoodTip } from '../beta/food';
 import { PushSettings } from '../beta/push';
-import { NextStep } from '../beta/today';
+import { NextStep, pauseSub, ReviewEntry } from '../beta/today';
 import { Briefing } from '../beta/briefing';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
@@ -214,7 +214,7 @@ function BarChart({ data, goal, height = 160, label, fmt = v => fmtNum(v), table
         {d.value == null
           ? <line x1={bx} x2={bx + w} y1={y(0) - 2} y2={y(0) - 2} className="c-missing" />
           : <rect x={bx} y={y(d.value)} width={w} height={Math.max(1, y(0) - y(d.value))} rx={Math.min(4, w / 3)} className={d.faint ? 'c-bar faint' : 'c-bar'} />}
-        {(i % every === 0 || i === data.length - 1) && <text x={bx + w / 2} y={H - 7} textAnchor="middle" className="c-axis">{d.label}</text>}
+        {((i % every === 0 && data.length - 1 - i >= Math.ceil(every / 2)) || i === data.length - 1) && <text x={bx + w / 2} y={H - 7} textAnchor="middle" className="c-axis">{d.label}</text>}
       </g>;
     })}
     {goal ? <g><line x1={pl} x2={W - pr} y1={y(goal)} y2={y(goal)} className="c-goal" /><text x={W - pr} y={y(goal) - 5} textAnchor="end" className="c-axis c-goal-t">{goalLabel} {fmt(goal)}</text></g> : null}
@@ -327,7 +327,7 @@ function Today({ ctx, onSetup }) {
       {arcOpen && <DayArc items={active} nowMin={nowMin} done={done} total={counted.length} onPick={id => openSheet({ kind: 'item', id })} />}
       <div className="stats">
         <Stat icon="dumbbell" label="Training" value={goal ? `${tw} von ${goal}` : `${tw}`} sub={!goal ? 'kein Trainingsziel' : tw >= goal ? 'Wochenziel erreicht' : `noch ${goal - tw} diese Woche`} onClick={() => go('woche')} />
-        <Stat icon="activity" label="Bewegungspausen" value={ps.eligible ? `${ps.done} von ${ps.eligible}` : 'keine geplant'} missing={!ps.eligible} sub={ps.eligible && ps.done >= ps.eligible ? 'alle geschafft' : ps.eligible ? `noch ${ps.eligible - ps.done} diese Woche` : 'werktags'} onClick={() => go('woche')} />
+        <Stat icon="activity" label="Bewegungspausen" value={ps.eligible ? `${ps.done} von ${ps.eligible}` : 'keine geplant'} missing={!ps.eligible} sub={pauseSub(data, today, ps)} onClick={() => go('woche')} />
         <Stat icon="steps" label="Schritte heute" value={stepsToday ? fmtNum(stepsToday.count) : 'nicht erfasst'} missing={!stepsToday} sub={stepsToday ? 'manuell eingetragen' : 'optional, tippen zum Eintragen'} onClick={() => go('erfassen', 'schritte')} />
         {BETA.weight && <Stat icon="scale" label="Gewicht" value={wt ? `${signed(wt.delta)} kg` : 'Eintragen'} missing={!wt} sub={wt ? 'Ø 7 Tage ggü. Vorwoche' : 'tippen zum Eintragen'} onClick={() => (wt ? go('entwicklung') : go('erfassen', 'gewicht'))} />}
       </div>
@@ -346,7 +346,7 @@ function Today({ ctx, onSetup }) {
 
     <section className="block">
       <details className="fold">
-        <summary><span>Ganzer Tag</span><span className="muted">{todays.length} {todays.length === 1 ? 'Eintrag' : 'Einträge'}</span></summary>
+        <summary><span>Alle Einträge heute</span><span className="muted">{todays.length} {todays.length === 1 ? 'Eintrag' : 'Einträge'}, {next.length} davon oben</span></summary>
         {todays.length ? <ul className="list">{todays.map(it => <ItemRow key={it.id} it={it} ctx={ctx} />)}</ul> : <Empty text="Heute ist nichts geplant." />}
       </details>
     </section>
@@ -492,7 +492,7 @@ function Week({ ctx }) {
       {cov === 'keine' && <p className="callout gap top0">Für diese Woche liegen keine Plan-Daten vor. Das ist eine Datenlücke, keine fehlende Leistung.</p>}
       {off < 0 && goal !== goalAt(data, weekStart(today)) && cov !== 'keine' && <p className="hint top0">Wochenziel damals: {goal}. Aktuelles Ziel: {goalAt(data, weekStart(today))}.</p>}
       {ms.total > 0 && <p className="hint top0">Nicht stattgefunden: {[ms.training && `${ms.training} Training`, ms.bewegung && `${ms.bewegung} Bewegung`, ms.sonst && `${ms.sonst} Sonstiges`].filter(Boolean).join(', ')}. Wird nicht nachgeholt.</p>}
-      <p className="hint top0">Verpasst zählt als nicht erledigt. Bewusst ausgelassene und pausierte Einträge fallen aus dem Nenner.</p>
+      <details className="b-more-info"><summary>Mehr dazu</summary><p className="hint top0">Verpasst zählt als nicht erledigt. Bewusst ausgelassene und pausierte Einträge fallen aus dem Nenner.</p></details>
       <StatusLegend />
     </section>
 
@@ -761,7 +761,7 @@ function Development({ ctx }) {
         <p>{ms.total ? `${ms.total} ${ms.total === 1 ? 'Eintrag' : 'Einträge'} (${[ms.training && `${ms.training} Training`, ms.bewegung && `${ms.bewegung} Bewegung`, ms.sonst && `${ms.sonst} Sonstiges`].filter(Boolean).join(', ')}). Das wird nicht nachgeholt. Wenn sich etwas wiederholt, lohnt sich ein anderer Zeitpunkt.` : 'Nichts verpasst bisher.'} {ps.skipped ? `${ps.skipped} bewusst ausgelassen.` : ''}</p>
         <h3 className="h3">Angenommene Maßnahmen</h3>
         <AcceptedMeasures ctx={ctx} />
-        <p className="hint">Zur Reflexion: Was hat geholfen, was war schwierig? HealthOS behauptet keinen Zusammenhang zwischen einzelnen Maßnahmen und einzelnen Messwerten.</p>
+        <details className="b-more-info"><summary>Mehr dazu</summary><p className="hint">Zur Reflexion: Was hat geholfen, was war schwierig? HealthOS behauptet keinen Zusammenhang zwischen einzelnen Maßnahmen und einzelnen Messwerten.</p></details>
         <h3 className="h3">Vorschläge für nächste Woche</h3>
         <ul className="plain">{suggestions.map(s => <li key={s}>{s}</li>)}</ul>
         <p className="hint">Der Rückblick folgt festen Regeln aus deinen Einträgen. Er ist keine medizinische Bewertung.</p>
@@ -1027,6 +1027,7 @@ function ItemSheet({ id, ctx, close }) {
         <h3 className="h3">Verschieben auf</h3>
         <div className="chips">{moveOpts.map(d => <button key={d} className="chip" onClick={() => run(x => A.moveItem(x, it.id, d), `Verschoben auf ${dayLabel(d, today)}`)}>{dayLabel(d, today)}</button>)}</div>
         {it.routine && <p className="hint">Gilt nur für diesen Termin. Die Routine bleibt unverändert.</p>}
+        {it.type === 'training' && moveOpts.some(d => d > addDays(weekStart(it.date), 6)) && <p className="hint">Tage ab dem nächsten Montag zählen nicht mehr für das Wochenziel dieser Woche.</p>}
         <button className="btn ghost wide" onClick={() => run(x => A.setStatus(x, it.id, 'ausgelassen'), 'Bewusst ausgelassen')}>Bewusst auslassen</button>
       </>}
     </>}
@@ -1143,6 +1144,7 @@ function InfoSheet({ close, onSettings }) {
       <h3 className="h3">Was bewusst fehlt</h3>
       <p className="hint">{BETA.demoData ? "Keine Push-Benachrichtigungen, kein Datei-Upload, keine Verbindung zu Health Connect, keine KI-Auswertung. Diese Datei ist noch keine installierbare App (PWA)." : BETA.info.missing}</p>
       {!BETA.demoData && <ul className="b-status">{BETA.status.map(([f, st]) => <li key={f}><span>{f}</span><b>{st}</b></li>)}</ul>}
+      {!BETA.demoData && <><h3 className="h3">Begriffe</h3><dl className="b-terms">{BETA.terms.map(([t, d]) => <div key={t}><dt>{t}</dt><dd>{d}</dd></div>)}</dl></>}
       <p className="hint">Version {APP_VERSION}</p>
       {!BETA.demoData && <p className="legal-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a>{BETA.feedbackEmail && <a href={`mailto:${BETA.feedbackEmail}?subject=HealthOS%20Beta%20Feedback`}>Feedback senden</a>}</p>}
       <button className="btn wide" onClick={() => { close(); onSettings(); }}>Zu den Einstellungen</button>
@@ -1582,7 +1584,8 @@ function ReviewHistory({ ctx }) {
           <td>{cov === 'keine' ? 'keine Daten' : `${trainingsInWeek(data, ws)} von ${g}`}</td>{showNow && <td>{goalNow}</td>}
           <td>{pa.eligible ? `${pa.done} von ${pa.eligible}` : 'keine Daten'}</td>
           <td>{(r.measures || []).filter(x => x.decision === 'übernommen').map(x => <span key={x.id} className="m-line">{x.title}{evalMeasure(x, data, today) ? `: ${evalMeasure(x, data, today)}` : ''}</span>)}{!(r.measures || []).some(x => x.decision === 'übernommen') && '–'}</td></tr>; })}
-      </tbody></table></div></> : <Empty text="Noch keine Reviews. Dein erster Check-in erscheint auf Heute, sobald eine Woche mit Plan vorliegt." />}
+      </tbody></table></div></> : <Empty text="Noch keine Reviews." />}
+      <ReviewEntry ctx={ctx} />
     {entries.filter(([, r]) => r.kind === 'month').length > 0 && <p className="hint">Monatsreviews: {entries.filter(([, r]) => r.kind === 'month').map(([k, r]) => `${fmtYm(k.slice(2))} ${REVIEW_STATUS[r.status].toLowerCase()}`).join(', ')}.</p>}
     <p className="hint">Werte werden aus dem Plan neu berechnet. Das Trainingsziel ist das damals geltende Ziel aus den Routinenversionen. Antworten aus Reviews werden nicht gespeichert.</p>
   </section>;
@@ -1751,8 +1754,8 @@ const OB_STEPS = [
   ['training', 'Training', 'Wo, wie oft und wann du trainieren möchtest.'],
   ['ernaehrung', 'Ernährung und Tracking', 'Was du festhalten möchtest. Alles optional.'],
   ['erinnerungen', 'Hinweise und Motivation', 'Wie deutlich HealthOS dich erinnern soll.'],
-  ['plan', 'Dein Wochenplan', 'Prüfe den Vorschlag. Alles bleibt später in den Einstellungen änderbar.'],
-];
+  ['plan', 'Dein Wochenplan', 'Prüfe den Vorschlag. Termine haben eine Uhrzeit, Gewohnheiten nicht. Pausen, Gewicht und Erinnerungen stellst du später in den Einstellungen ein. In der Beta gibt es keine Mahlzeitenerfassung.'],
+].filter(([k]) => !BETA.obSkip.includes(k));
 function StepContent({ k, cfg, setCfg, body, setBody, onTouch }) {
   if (k === 'ziele') return <StepGoals cfg={cfg} setCfg={setCfg} />;
   if (k === 'arbeit') return <StepWork cfg={cfg} setCfg={setCfg} />;
@@ -1771,7 +1774,7 @@ function Onboarding({ initial, initialBody, onDone, onLater, startStep = 0 }) {
   const [touched, setTouched] = useState(false);
   const ref = useRef(null);
   const [k, title, lead] = OB_STEPS[i];
-  useEffect(() => { if (ref.current) ref.current.scrollTop = 0; setErr(''); if (k === 'ernaehrung' && !touched) setCfg(c => ({ ...c, habits: suggestHabits(c.goals) })); }, [i]);
+  useEffect(() => { if (ref.current) ref.current.scrollTop = 0; setErr(''); if ((k === 'ernaehrung' || (k === 'plan' && BETA.obSkip.includes('ernaehrung'))) && !touched) setCfg(c => ({ ...c, habits: suggestHabits(c.goals) })); }, [i]);
   const check = () => (k === 'ernaehrung' ? (cfg.nutrition.weight ? validateWeight(body.weight) : '') : k === 'arbeit' ? workError(cfg) : '');
   const next = () => { const e = check(); if (e) return setErr(e); if (i < OB_STEPS.length - 1) setI(i + 1); else onDone(cfg, body); };
   const skip = () => {

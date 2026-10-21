@@ -69,7 +69,9 @@ const tabsBtn = i => [...document.querySelectorAll('.tabbar button')][i];
 await mount();
 {
   if (mode !== 'demo') ok([...document.querySelectorAll('.chip, button')].some(b => /^Abnehmen$/.test(b.textContent.trim())), 'Ziel „Abnehmen“ wieder wählbar');
+  ok(/Schritt 1 von 4/.test(document.body.textContent), 'Onboarding hat 4 Schritte');
   for (let i = 0; i < 12; i++) { const w = byText('Weiter'); if (!w) break; await click(w); }
+  ok(/Termine haben eine Uhrzeit, Gewohnheiten nicht/.test(document.body.textContent), 'Plan-Schritt erklärt Begriffe und Beta-Umfang');
   await click(byText('Plan übernehmen')); await wait(1200);
 }
 ok(!!document.querySelector('.b-progress') && /heute geschafft|Freier Tag/.test(document.querySelector('.b-progress').textContent), 'Tagesring oben auf Heute');
@@ -159,6 +161,7 @@ await click(tabsBtn(3)); await wait(200);
 ok(!/Kalorien/.test(document.querySelector('main').textContent), 'Entwicklung ohne Kalorienverlauf');
 if (mode === 'demo') ok(/Gewichtstrend/.test(document.querySelector('main').textContent) && !!document.querySelector('.b-wt-line'), 'Entwicklung zeigt geglätteten Gewichtstrend');
 ok(!/Gesundheit, Für dich/.test(document.querySelector('main').textContent), 'Kein Verweis auf den ausgeblendeten Bereich „Für dich“');
+ok(!!document.querySelector('.b-review-entry'), 'Entwicklung hat einen festen Einstieg in den Check-in');
 // Woche: Gewohnheiten als Anzahl statt Prozent
 await click(tabsBtn(1)); await wait(200);
 const goalHead = [...document.querySelectorAll('.goal-head')].find(g => /Gewohnheiten/.test(g.textContent));
@@ -169,7 +172,7 @@ const infoTxt = document.body.textContent;
 if (mode !== 'demo') ok(!/Keine Push-Benachrichtigungen/.test(infoTxt) && /Push-Erinnerungen: verfügbar/.test(infoTxt), 'Info nennt den tatsächlichen Funktionsstatus');
 ok(/Version /.test(infoTxt), 'Versionsstand sichtbar');
 const links = [...document.querySelectorAll('.legal-links a')].map(a => a.getAttribute('href'));
-if (mode !== 'demo') { ok(document.querySelectorAll('.b-status li').length >= 5 && /Push-Erinnerungen/.test(document.querySelector('.b-status').textContent), 'Info zeigt den zentralen Funktionsstand'); ok(/Version /.test(text()), 'Info zeigt die Version'); }
+if (mode !== 'demo') { ok(document.querySelectorAll('.b-status li').length >= 5 && /Push-Erinnerungen/.test(document.querySelector('.b-status').textContent), 'Info zeigt den zentralen Funktionsstand'); ok(/Version /.test(text()), 'Info zeigt die Version'); ok(document.querySelectorAll('.b-terms dt').length === 4, 'Info erklärt Termin, Routine, Gewohnheit, Messung'); }
 if (mode !== 'demo') ok(links.includes('/impressum') && links.includes('/datenschutz'), `Impressum und Datenschutz verlinkt (${links.join(', ')})`);
 await click([...document.querySelectorAll('button')].find(b => /Schließen|Fertig/.test(b.textContent)) || document.body); await wait(100);
 // Einstellungen: vollständiger Export, Konto löschen

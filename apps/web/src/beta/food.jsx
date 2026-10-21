@@ -116,6 +116,8 @@ export function FoodTip({ ctx }) {
   const [open, setOpen] = useState(false);
   if (!BETA.foodGuide) return null;
   const trainingToday = data.items.some(i => i.date === today && i.type === 'training' && !['verschoben', 'pausiert'].includes(i.status));
+  // Nur zeigen, wenn es zu den Zielen oder zum Tag passt (Audit P2)
+  if (!trainingToday && !(cfg.goals || []).some(g => ['ernaehrung', 'abnehmen'].includes(g))) return null;
   const pool = rankFoods(cfg, trainingToday).slice(0, 10);
   const f = pool[dayNo(today) % pool.length];
   const h = f.habit ? habitFor(f.habit) : null; const on = h && hasHabit(data, h);

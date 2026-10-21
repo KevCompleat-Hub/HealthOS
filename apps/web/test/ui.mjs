@@ -120,7 +120,7 @@ const all = await docsNow(); const bad = Object.entries(all).filter(([k, b]) => 
 // Einstellungen: Konto, Speicher, Löschen
 await click(document.querySelector('button[aria-label="Einstellungen"]'));
 if (mode !== 'demo') { ok(/Angemeldet als tester@example.org/.test(text()), 'Einstellungen zeigen das Konto'); await click(byText('Abmelden')); ok(signedOut, 'Abmelden wird ausgelöst'); }
-ok(/Training, Schritte/.test(text()) && /Gewicht/.test(text()), 'Speicherhinweis nennt Training, Schritte und Gewicht');
+ok(/Trainings?, Schritte/.test(text()) && /Gewicht/.test(text()) && /Frankfurt|nur in diesem Browser/.test(text()), 'Speicherhinweis nennt Training, Schritte, Gewicht und den Speicherort');
 await click(byText('Gespeicherte Daten löschen')); await click(byText('Endgültig löschen')); await wait(500); console.log('  nach 0,5 s übrig:', Object.keys(await docsNow()).length, '| Meldung:', (document.querySelector('.toast') || {}).textContent, '| Fehler:', (document.querySelector('.err') || {}).textContent); await wait(2500);
 const left = Object.keys(await docsNow()).length;
 ok(left === 0, `Löschen entfernt alle gespeicherten Dokumente (${left} übrig)`);
