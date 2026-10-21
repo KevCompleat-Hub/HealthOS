@@ -1,5 +1,14 @@
 # Release Notes EvoVive Beta (vorher HealthOS)
 
+## 0.14.0-w16 (21.10.2026), Mahlzeiten mit dem Bundeslebensmittelschlüssel
+- Erfassen, Mahlzeit: Suche in 7.140 Lebensmitteln des BLS 4.0 (Max Rubner-Institut), Menge in Gramm mit Schnellwahl, Zuordnung zu Frühstück, Mittagessen, Abendessen oder Snack.
+- Erfassungsstil wählt der Nutzer: „Oft dasselbe“ (gespeicherte Mahlzeiten und Häufiges zuerst) oder „Abwechslungsreich“ (Suche zuerst), jederzeit umschaltbar.
+- Gespeicherte Mahlzeiten unter eigenem Namen, „Häufig gegessen“ mit einem Tipp, Einträge des Tages löschbar.
+- Tagesziele: Eiweiß nach DGE (0,8 g/kg, bei Sport ab etwa 5 Stunden pro Woche 1,2 bis 2,0 g/kg) aus dem letzten Gewicht, Ballaststoffe mindestens 30 g (DGE-Richtwert). Kalorien nur als Opt-in, Standard aus.
+- „Mehr Nährstoffe“ zum Nachschlagen: Calcium, Eisen, Magnesium, Kalium, Vitamin C, D, B12, Folat je 100 g.
+- Fehlende BLS-Werte werden nicht als 0 gezählt, Summen dann als „mind.“ gekennzeichnet. Quellenangabe in allen Ansichten mit Nährwerten.
+- Einwilligung beta-4 (Gewicht, Körperwerte und Mahlzeiten), wird einmal neu abgefragt. Datenbank: Mahlzeiten nur im Dokument „koerper“ mit beta-4, live geprüft.
+
 ## 0.13.0-w15 (21.10.2026), Rebranding zu EvoVive
 - Sichtbarer Name überall EvoVive: Anmeldung, Einwilligung, Onboarding, alle Ansichten, Info, Einstellungen, Hinweise, Impressum, Datenschutz, Seitentitel, Manifest, Offline-Seite, Exportdatei-Name, Feedback-Betreff.
 - Neues Symbol und Wortmarke, Waldgrün mit Salbei und warmem Hintergrund im Hell-Modus. Dunkel-Modus unverändert.

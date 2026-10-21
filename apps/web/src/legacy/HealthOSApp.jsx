@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable */
 // AUTOMATISCH ERZEUGT von tools/build-web-ui.mjs aus packages/reference/v5/app.jsx. Nicht von Hand ändern.
-// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 127, siehe Generator.
+// Oberfläche: Referenz v5. Fachlogik: @healthos/domain (M1). Beta-Anpassungen: 133, siehe Generator.
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as D from '@healthos/domain';
 import { FEATURES as BETA } from '../features';
@@ -17,6 +17,7 @@ import { Briefing, AltCard } from '../beta/briefing';
 import { QuickRepeat } from '../beta/logging';
 import { GoalChain, Experiments, Patterns } from '../beta/goals';
 import { CheckinCard, ContextInsights } from '../beta/checkin';
+import { BlsMealForm, NutritionWeek } from '../beta/meals';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { A, APPT_STATUS, COVERAGE_LABEL, DEFAULT_CONFIG, EVIDENCE, EVIDENCE_LEVELS, GOALS, HABIT_LIBRARY, IDEA_FOODS, INTENSITIES, INTENSITY, LAB_MARKERS, MEALS, PAUSE_KINDS, PLACES, PRIORITIES, REC_STATUS, REVIEW_STATUS, SCHEMA, SLOTS, STATUS_INFO, TASK_CLASSES, TONES, TYPES, WD, WD_LONG, WORKOUT_KINDS, addDays, adherence, allPauses, applyMeasureState, avg, berlinParts, buildExport, buildPlan, byTime, classOfItem, clone, coachHint, coachMeasures, completeReviewState, computeRecs, dayLabel, dayLabelLc, dayNutrition, daysBetween, effStatus, evalMeasure, findConflicts, fmtDM, fmtLong, fmtNum, fmtShort, fmtVal, fmtYm, gapText, goalAt, groupLabs, habitOn, habitStats, hints, hm, inWeek, isPause, isoWeek, labAssessment, markerOf, materialize, measureRecord, migrateSaved, missesInWeek, monthMetrics, monthlyDescriptor, monthlyTarget, nextActions, nextMonday, nextWeeklyDate, normalizeConfig, pad, parse, parseImport, parseNum, pauseStats, pausedAll, pct, pickQuestions, planDiff, planStart, previousQuestionIds, r15, recSourceList, recView, refPos, refText, reviewForDate, reviewOffer, runningMeasures, seed, signed, snap, snapshotDocs, specText, suggestHabits, syncHabits, syncPlanRoutines, toMin, trainingSeries, trainingsInWeek, uid, validateWeight, versionAt, wdIdx, weekCoverage, weekDays, weekMetrics, weekStart, weeklyDescriptor, weeklyWindow, weightTrend, workError, ymOf, yy } = D;
@@ -707,7 +708,7 @@ function Capture({ ctx, seg, setSeg }) {
     {BETA.capture.includes('gewicht') && seg === 'gewicht' && <><WeightForm ctx={ctx} /><ScaleImport ctx={ctx} /></>}
     {seg === 'schritte' && <StepsForm ctx={ctx} />}
     {seg === 'training' && <><QuickRepeat ctx={ctx} /><TrainingForm ctx={ctx} /></>}
-    {BETA.capture.includes('mahlzeit') && seg === 'mahlzeit' && <MealForm ctx={ctx} />}
+    {BETA.capture.includes('mahlzeit') && seg === 'mahlzeit' && <BlsMealForm ctx={ctx} />}
   </div>;
 }
 
@@ -779,13 +780,14 @@ function Development({ ctx }) {
         <div className="goal"><div className="goal-head"><span>{goal ? `${goal} Trainingseinheiten pro Woche` : 'Training, kein Wochenziel'}</span><b>{goal ? `${tw} von ${goal}` : tw}</b></div><Progress value={tw} max={goal || 1} label="Trainingsziel" /></div>
         <div className="goal"><div className="goal-head"><span>Bewegungspause an Werktagen</span><b>{ps.done} von {ps.eligible}</b></div><Progress value={ps.done} max={ps.eligible} label="Bewegungspausen" /></div>
         <div className="goal"><div className="goal-head"><span>Gewohnheiten</span><b>{hs.eligible ? `${hs.done} von ${hs.eligible}` : 'noch keine Tage'}</b></div><Progress value={hs.done} max={hs.eligible} label="Gewohnheiten" /></div>
-        {BETA.weight && <p className="hint">{BETA.capture.includes('mahlzeit') ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, EvoVive legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. EvoVive legt keine Zielwerte automatisch fest."}</p>}
+        {BETA.weight && <p className="hint">{(data.mealPrefs || {}).showKcal ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, EvoVive legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. EvoVive legt keine Zielwerte automatisch fest."}</p>}
       </div>
     </section>
 
     <section className="block"><GoalChain ctx={ctx} /></section>
     <Experiments ctx={ctx} />
     <Patterns ctx={ctx} />
+    <NutritionWeek ctx={ctx} />
     {BETA.checkins && <ContextInsights ctx={ctx} />}
 
     <h2 className="h2 block">Verläufe</h2>
@@ -819,7 +821,7 @@ function Development({ ctx }) {
         <p className="legend"><span className="lg-missing" /> nicht erfasst, wird nicht als 0 gezählt</p>
       </div>
     </section>
-    {BETA.capture.includes('mahlzeit') && <section className="block">
+    {BETA.capture.includes('mahlzeit') && (data.mealPrefs || {}).showKcal && <section className="block">
       <h3 className="h3 top0">Kalorien, letzte 7 Tage</h3>
       <div className="panel"><BarChart data={kcal} label="Kalorien pro Tag" table="kcal" />
         <p className="legend"><span className="lg-bar" /> vollständig <span className="lg-bar faint" /> unvollständig <span className="lg-missing" /> nicht erfasst</p></div>
@@ -1706,7 +1708,7 @@ function StepTraining({ cfg, setCfg }) {
 function StepNutrition({ cfg, setCfg, onTouch, body, setBody }) {
   const n = cfg.nutrition; const set = k => setSec(setCfg, 'nutrition', k);
   return <>
-    {BETA.capture.includes('mahlzeit') && <Toggle checked={n.calories} onChange={v => setCfg(c => ({ ...c, nutrition: { ...c.nutrition, calories: v, habitsFirst: v ? false : c.nutrition.habitsFirst } }))}>Kalorien und Makros erfassen</Toggle>}
+    {false && <Toggle checked={n.calories} onChange={v => setCfg(c => ({ ...c, nutrition: { ...c.nutrition, calories: v, habitsFirst: v ? false : c.nutrition.habitsFirst } }))}>Kalorien und Makros erfassen</Toggle>}
     <Toggle checked={n.habitsFirst} onChange={v => setCfg(c => ({ ...c, nutrition: { ...c.nutrition, habitsFirst: v, calories: v ? false : c.nutrition.calories } }))}>Zunächst nur Ernährungsgewohnheiten verbessern, ohne Kalorien</Toggle>
     {BETA.weight && <Toggle checked={n.weight} onChange={set('weight')}>Gewicht tracken</Toggle>}
     {n.weight && <Field label="Wie oft wiegen?"><Chips options={[[1, '1× pro Woche'], [2, '2×'], [3, '3×']]} value={n.weightPerWeek} onChange={set('weightPerWeek')} /></Field>}
@@ -2000,7 +2002,7 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
           setCfg(BETA.restrictConfig(m.cfg));
           if (m.theme) setTheme(m.theme);
           setData(d => {
-            const st = { ...d, routines: m.routines, recState: m.recState, reviews: m.reviews, items: m.items, habits: m.habits || d.habits, habitLog: m.habitLog, pauses: m.pauses, dismissed: m.dismissed, ...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}), ...(saved.koerper ? { weights: saved.koerper.weights || [] } : {}), ...(saved.checkins ? { checkins: saved.checkins.entries || {} } : {}) };
+            const st = { ...d, routines: m.routines, recState: m.recState, reviews: m.reviews, items: m.items, habits: m.habits || d.habits, habitLog: m.habitLog, pauses: m.pauses, dismissed: m.dismissed, ...(saved.activity ? { workouts: saved.activity.workouts || [], steps: saved.activity.steps || [] } : {}), ...(saved.koerper ? { weights: saved.koerper.weights || [], meals: saved.koerper.meals || [], mealPresets: saved.koerper.mealPresets || [], mealPrefs: saved.koerper.mealPrefs || {} } : {}), ...(saved.checkins ? { checkins: saved.checkins.entries || {} } : {}) };
             const mat = materialize(st, today);
             return { ...mat, habits: syncHabits(mat.habits, m.cfg) };
           });
@@ -2033,9 +2035,9 @@ function App({ initialTab = 'heute', initialSheet = null, initialCapture = 'trai
   };
   useEffect(() => {
     if (store.status !== 'ready' || !conn.current || !cfg.onboardingDone) return;
-    const t = setTimeout(() => { const docs = { ...snapshotDocs(cfg, data, theme), ...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}), ...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {}), ...(BETA.checkins && data.checkins && Object.keys(data.checkins).length ? { checkins: { schema: SCHEMA, entries: data.checkins } } : {}) }; chain.current = chain.current.then(() => saveDocs(docs)).catch(() => {}); }, 800);
+    const t = setTimeout(() => { const docs = { ...snapshotDocs(cfg, data, theme), ...(BETA.persistActivity ? { activity: { schema: SCHEMA, workouts: data.workouts, steps: data.steps } } : {}), ...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights, ...(BETA.capture.includes('mahlzeit') ? { meals: data.meals, mealPresets: data.mealPresets || [], mealPrefs: data.mealPrefs || {} } : {}) } } : {}), ...(BETA.checkins && data.checkins && Object.keys(data.checkins).length ? { checkins: { schema: SCHEMA, entries: data.checkins } } : {}) }; chain.current = chain.current.then(() => saveDocs(docs)).catch(() => {}); }, 800);
     return () => clearTimeout(t);
-  }, [cfg, data.items, data.routines, data.recState, data.reviews, data.habits, data.habitLog, data.pauses, data.dismissed, data.workouts, data.steps, data.weights, data.checkins, theme, store.status]);
+  }, [cfg, data.items, data.routines, data.recState, data.reviews, data.habits, data.habitLog, data.pauses, data.dismissed, data.workouts, data.steps, data.weights, data.checkins, data.meals, data.mealPresets, data.mealPrefs, theme, store.status]);
 
   const commit = (fn, msg) => {
     setData(prev => { undoRef.current = prev; return fn(prev); });

@@ -68,9 +68,9 @@ patch('Termine auf Heute Ende', '        : <Empty text="In den nächsten drei Wo
 // Entwicklung: Gewichtsverlauf
 patch('Gewichtsverlauf', '<section className="block tight">\n      <div className="h2-row"><h3 className="h3 top0">Gewicht</h3>', '{BETA.weight && <section className="block tight">\n      <div className="h2-row"><h3 className="h3 top0">Gewicht</h3>');
 patch('Gewichtsverlauf Ende', "action={<button className=\"btn small\" onClick={() => ctx.go('erfassen', 'gewicht')}>Ersten Wert erfassen</button>} />}\n      </div>\n    </section>", "action={<button className=\"btn small\" onClick={() => ctx.go('erfassen', 'gewicht')}>Ersten Wert erfassen</button>} />}\n      </div>\n    </section>}");
-patch('Zielhinweis Gewicht', '<p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>', '{BETA.weight && <p className="hint">{BETA.capture.includes(\'mahlzeit\') ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. HealthOS legt keine Zielwerte automatisch fest."}</p>}');
+patch('Zielhinweis Gewicht', '<p className="hint">Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest.</p>', '{BETA.weight && <p className="hint">{(data.mealPrefs || {}).showKcal ? "Gewichts- und Kalorienziel sind nicht festgelegt. Beides ist optional, HealthOS legt keine Zielwerte automatisch fest." : "Ein Gewichtsziel ist nicht festgelegt. HealthOS legt keine Zielwerte automatisch fest."}</p>}');
 // Einrichtung: keine Gewichts- oder Kalorienerfassung, kein Blutwerte-Ziel
-patch('Kalorien-Schalter', '<Toggle checked={n.calories} onChange={v =>', '{BETA.capture.includes(\'mahlzeit\') && <Toggle checked={n.calories} onChange={v =>');
+patch('Kalorien-Schalter', '<Toggle checked={n.calories} onChange={v =>', '{false && <Toggle checked={n.calories} onChange={v =>');
 patch('Kalorien-Schalter Ende', '>Kalorien und Makros erfassen</Toggle>', '>Kalorien und Makros erfassen</Toggle>}');
 patch('Gewicht-Schalter', "<Toggle checked={n.weight} onChange={set('weight')}>Gewicht tracken</Toggle>", "{BETA.weight && <Toggle checked={n.weight} onChange={set('weight')}>Gewicht tracken</Toggle>}");
 patch('Zielauswahl', '<Chips multi options={Object.entries(GOALS)} value={cfg.goals}', '<Chips multi options={Object.entries(GOALS).filter(([k]) => !BETA.hiddenGoals.includes(k))} value={cfg.goals}');
@@ -185,6 +185,13 @@ patch('Entwicklung: Befinden und Kontext', '    <Patterns ctx={ctx} />\n', '    
 // ---------- W15: Rebranding EvoVive (sichtbare Texte; interne Namen wie Dateien, Formate, Speicherschlüssel bleiben) ----------
 patch('Marke: Meldungen des Kerns beim Import mit neuem Namen', 'setImp(parseImport(JSON.parse(String(fr.result))));', "setImp((r => (r && r.error ? { ...r, error: r.error.replace('HealthOS', 'EvoVive') } : r))(parseImport(JSON.parse(String(fr.result)))));");
 patch('Marke: zweifarbige Wortmarke', '<span className="brand-text">HealthOS</span>', '<span className="brand-text">Evo<b>Vive</b></span>');
+// ---------- W16: Mahlzeiten mit BLS ----------
+patch('Mahlzeiten speichern', "...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights } } : {})", "...(BETA.weight ? { koerper: { schema: SCHEMA, weights: data.weights, ...(BETA.capture.includes('mahlzeit') ? { meals: data.meals, mealPresets: data.mealPresets || [], mealPrefs: data.mealPrefs || {} } : {}) } } : {})");
+patch('Speicher-Abhängigkeit Mahlzeiten', 'data.workouts, data.steps, data.weights, data.checkins, theme, store.status]);', 'data.workouts, data.steps, data.weights, data.checkins, data.meals, data.mealPresets, data.mealPrefs, theme, store.status]);');
+patch('Mahlzeiten laden', "...(saved.koerper ? { weights: saved.koerper.weights || [] } : {})", "...(saved.koerper ? { weights: saved.koerper.weights || [], meals: saved.koerper.meals || [], mealPresets: saved.koerper.mealPresets || [], mealPrefs: saved.koerper.mealPrefs || {} } : {})");
+patch('Erfassen: Mahlzeit mit BLS', "{BETA.capture.includes('mahlzeit') && seg === 'mahlzeit' && <MealForm ctx={ctx} />}", "{BETA.capture.includes('mahlzeit') && seg === 'mahlzeit' && <BlsMealForm ctx={ctx} />}");
+patch('Entwicklung: Kalorienverlauf nur bei eingeschalteten Kalorien', "{BETA.capture.includes('mahlzeit') && <section className=\"block\">\n      <h3 className=\"h3 top0\">Kalorien, letzte 7 Tage</h3>", "{BETA.capture.includes('mahlzeit') && (data.mealPrefs || {}).showKcal && <section className=\"block\">\n      <h3 className=\"h3 top0\">Kalorien, letzte 7 Tage</h3>");
+patch('Entwicklung: Ernährung der Woche', '    <Patterns ctx={ctx} />\n', '    <Patterns ctx={ctx} />\n    <NutritionWeek ctx={ctx} />\n');
 const log = [];
 for (const p of P) {
   const n = ui.split(p.from).length - 1;
@@ -213,6 +220,7 @@ import { Briefing, AltCard } from '../beta/briefing';
 import { QuickRepeat } from '../beta/logging';
 import { GoalChain, Experiments, Patterns } from '../beta/goals';
 import { CheckinCard, ContextInsights } from '../beta/checkin';
+import { BlsMealForm, NutritionWeek } from '../beta/meals';
 import { WeightTrendCard } from '../beta/weight';
 import { AccountExtras, exportAllData, APP_VERSION } from '../beta/account';
 const { ${[...used].sort().join(', ')} } = D;

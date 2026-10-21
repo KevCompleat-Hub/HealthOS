@@ -11,12 +11,13 @@ const steps = [
   ['Morning Briefing', 'node', ['test/briefing.mjs']],
   ['Paket C: Ziele, Experimente, Muster', 'node', ['test/goals.mjs']],
   ['Paket D: Befinden und Tags', 'node', ['test/checkin.mjs']],
+  ['Mahlzeiten mit BLS', 'node', ['test/meals.mjs']],
   ['Oberfläche Beta (Speicher wie Supabase)', 'node', ['test/ui.mjs', 'beta']],
   ['Oberfläche Entwicklungs-Demo', 'node', ['test/ui.mjs', 'demo']],
   ['Motivation und Review-Korrekturen (Beta)', 'node', ['test/ui-w5.mjs', 'beta']],
   ['Motivation und Review-Korrekturen (Demo)', 'node', ['test/ui-w5.mjs', 'demo']],
 ];
-if (process.env.HEALTHOS_DB_TEST) steps.push(['Anbindung über Supabase-Client', 'node', ['test/db.mjs']], ['Oberfläche gegen Datenbank', 'node', ['test/ui.mjs', 'beta-db']]);
+if (process.env.HEALTHOS_DB_TEST) steps.push(['Anbindung über Supabase-Client', 'node', ['test/db.mjs']], ['Oberfläche gegen Datenbank', 'node', ['test/ui.mjs', 'beta-db']], ['Neuere Abläufe gegen Datenbank', 'node', ['test/ui-w5.mjs', 'beta-db']]);
 for (const [name, cmd, args] of steps) {
   const r = spawnSync(cmd, args, { encoding: 'utf8', env: { ...process.env, TZ: process.env.TZ || 'UTC' } });
   const last = `${r.stdout}${r.stderr}`.trim().split('\n').filter(l => !/Warning|act\(/.test(l)).pop() || '';

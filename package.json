@@ -1,7 +1,7 @@
 {
   "name": "healthos",
   "private": true,
-  "version": "0.13.0-w15",
+  "version": "0.14.0-w16",
   "description": "HealthOS Monorepo, Phase M1: Domänenkern in TypeScript mit Paritätstests gegen die Referenz v5",
   "packageManager": "pnpm@9.15.9",
   "engines": {

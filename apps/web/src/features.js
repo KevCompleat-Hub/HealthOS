@@ -8,7 +8,7 @@ export const FEATURES = {
   recs: false,               // Health Intelligence und Empfehlungs-Maßnahmen
   weight: true,              // Gewicht und Körperwerte, mit eigener Einwilligung (beta-2), Entscheidung E-11
   appointments: false,       // Arzttermine und Vorsorge
-  capture: ['training', 'schritte', 'gewicht'],
+  capture: ['training', 'schritte', 'gewicht', 'mahlzeit'],
   hiddenGoals: ['werte'],    // Ziel „Blutwerte“ bezieht sich auf Laborwerte
   persistActivity: true,     // Trainingseinheiten und Schritte werden gespeichert
   pill: mode === 'demo' ? 'Demo, fiktive Daten' : 'Geschlossene Beta',
@@ -24,7 +24,8 @@ export const FEATURES = {
 FEATURES.restrictConfig = cfg => ({
   ...cfg,
   goals: cfg.goals.filter(g => !FEATURES.hiddenGoals.includes(g)),
-  nutrition: { ...cfg.nutrition, calories: FEATURES.capture.includes('mahlzeit') ? cfg.nutrition.calories : false, weight: FEATURES.weight ? cfg.nutrition.weight : false },
+  nutrition: { ...cfg.nutrition, calories: false, // Kalorien sind ein eigenes Opt-in in der Mahlzeiten-Erfassung (mealPrefs.showKcal), Standard aus
+    weight: FEATURES.weight ? cfg.nutrition.weight : false },
 });
 
 /** Texte im Info-Dialog der Beta. */
@@ -103,4 +104,4 @@ FEATURES.habitIdeas.push(
 /** Paket D (W14): Befinden und Tags mit eigener Einwilligung beta-3. */
 FEATURES.checkins = true;
 FEATURES.status.splice(3, 0, ['Befinden (Stimmung, Energie, Stress, Schlaf) und Tags wie Krankheit', 'verfügbar, nur mit eigener Einwilligung']);
-FEATURES.status.push(['Nährstoffziele mit Nährwert-Datenbank (BLS)', 'in Vorbereitung']);
+FEATURES.status.push(['Mahlzeiten mit Nährwerten aus dem Bundeslebensmittelschlüssel, Ziele für Eiweiß und Ballaststoffe', 'verfügbar']);

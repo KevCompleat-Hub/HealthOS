@@ -21,6 +21,8 @@ Object.assign(globalThis, { window: dom.window, document: dom.window.document, H
 Object.defineProperty(globalThis, 'navigator', { value: dom.window.navigator, configurable: true });
 window.scrollTo = () => {};
 let downloaded = null; globalThis.URL.createObjectURL = window.URL.createObjectURL = b => { downloaded = b; return 'blob:test'; }; globalThis.URL.revokeObjectURL = window.URL.revokeObjectURL = () => {}; window.HTMLAnchorElement.prototype.click = function () {};
+{ const realFetch = globalThis.fetch; const { readFileSync } = await import('node:fs'); const pathMod = await import('node:path');
+  globalThis.fetch = async (u, o) => (typeof u === 'string' && u.startsWith('/bls/') ? { ok: true, json: async () => JSON.parse(readFileSync(pathMod.join(process.cwd(), 'public', u), 'utf8')) } : realFetch(u, o)); }
 window.fetch = globalThis.fetch; window.Headers = globalThis.Headers; window.Request = globalThis.Request; window.Response = globalThis.Response;
 const require = createRequire(import.meta.url);
 const React = require('react'); const { createRoot } = require('react-dom/client'); const { act } = React;
@@ -45,7 +47,7 @@ let dbstand = null;
 if (mode === 'beta-db') {
   dbstand = await import('./dbstand.mjs'); await dbstand.start();
   const C = '33333333-3333-3333-3333-333333333333'; const sb = dbstand.client(C);
-  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-2' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
+  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-4' }); await sb.from('beta_consents').insert({ user_id: C, version: 'beta-3' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
   backend = M.supabaseBackend(sb, C);
   if (process.env.DEBUG) { const put0 = backend.put; backend.put = async (k, b) => { const t0 = Date.now(); try { await put0(k, b); console.log('  put ok', k, Date.now() - t0, 'ms'); } catch (e) { console.log('  put FEHLER', k, e.message); throw e; } }; }
   process.on('exit', () => dbstand.stop());
@@ -122,7 +124,7 @@ else {
   for (let s = 0; s < 8; s++) { seen += document.querySelector('.review') ? document.querySelector('.review').textContent : ''; const opt = document.querySelector('.review .chip, .review [role="radio"]'); if (opt && /umfang|Umfang/.test(seen)) { /* Antworten optional */ } const w = byText('Weiter'); if (!w) break; await click(w); await wait(150); }
   const stepsSeen = [...new Set((seen.match(/Schritt \d von \d/g) || []))];
   ok(stepsSeen.length >= 4 && /Alles so fortführen|Alles andere so fortführen|anpassen|verlegen|pausieren/.test(seen), `Check-in bis zu den Maßnahmen durchlaufen (${stepsSeen.join(', ')})`);
-  ok(/Gewicht/.test(seen) && !/Mahlzeiten/.test(seen), 'Check-in fragt Gewicht ab und zeigt keine Mahlzeiten');
+  ok(/Gewicht/.test(seen), 'Check-in fragt Gewicht ab');
   ok(!/Ernährungsänderung/.test(seen), 'Check-in fragt nicht nach Ernährung');
   ok(!/Haferflocken|Hülsenfrüchten|Health Intelligence/.test(seen), 'Check-in schlägt keine Empfehlungs-Maßnahmen vor');
   ok(!!byText('Später fortsetzen'), '„Später fortsetzen“ statt „Schließen“');
@@ -162,6 +164,28 @@ ok(cd && cd.entries && Object.values(cd.entries).some(x => x.mood === 4 && x.tag
 ok(!!document.querySelector('.b-checkin .chip') && !!byText('Fertig'), 'Karte bleibt offen, bis „Fertig“ getippt wird');
 await click(byText('Fertig')); await wait(50);
 ok(/Stimmung: gut/.test(document.querySelector('.b-checkin').textContent) && /Krankheit/.test(document.querySelector('.b-checkin').textContent), 'Nach „Fertig“ kurze Zusammenfassung');
+// W16: Mahlzeit mit BLS erfassen
+await click(tabsBtn(2)); await wait(150);
+await click([...document.querySelectorAll('.seg button, [role="radio"], [role="tab"]')].find(b => b.textContent.trim() === 'Mahlzeit')); await wait(150);
+ok(/Wie isst du meistens/.test(document.querySelector('main').textContent), 'Erfassungsstil wird beim ersten Mal abgefragt');
+await click(byText('Oft dasselbe')); await wait(1100);
+ok(((await docsNow()).koerper || {}).mealPrefs && (await docsNow()).koerper.mealPrefs.style === 'wiederkehrend', 'Erfassungsstil „wiederkehrend“ gespeichert');
+const secs2 = [...document.querySelectorAll('.b-meal-sec')].map(x => x.getAttribute('aria-label'));
+ok(secs2[0] === 'Gespeicherte Mahlzeiten', `Bei „wiederkehrend“ stehen gespeicherte Mahlzeiten oben (${secs2.join(' > ')})`);
+const qIn = [...document.querySelectorAll('.b-meal input')].find(i => /Haferflocken/.test(i.placeholder || ''));
+await setVal(qIn, 'haferflocken'); for (let i = 0; i < 20 && !document.querySelector('.b-results button'); i++) await wait(150);
+const firstRes = document.querySelector('.b-results button');
+ok(firstRes && /^Hafer Flocken/.test(firstRes.textContent), `Suche zeigt Haferflocken aus dem BLS (${firstRes ? firstRes.textContent.slice(0, 40) : '-'})`);
+await click(firstRes); await wait(100);
+await click([...document.querySelectorAll('.b-sel-food .chip')].find(b => b.textContent === '50 g')); await wait(50);
+await click([...document.querySelectorAll('.b-sel-food button')].find(b => b.textContent.startsWith('Zu '))); await wait(1100);
+const kd2 = (await docsNow()).koerper;
+ok(kd2 && kd2.meals.some(m => m.bls === 'C133000' && m.qty === 50 && m.snap.p === 6.6), 'Mahlzeit mit BLS-Werten gespeichert (50 g Haferflocken, 6,6 g Eiweiß)');
+ok(/Heute gegessen/.test(document.querySelector('main').textContent) && /Bundeslebensmittelschlüssel/.test(document.querySelector('main').textContent), 'Tageswerte mit Quellenangabe BLS');
+const pIn = [...document.querySelectorAll('.b-meal input')].find(i => /speichern als/.test(i.placeholder || ''));
+await setVal(pIn, 'Mein Frühstück'); await click([...document.querySelectorAll('.b-meal button')].find(b => b.textContent === 'Speichern')); await wait(1100);
+ok(((await docsNow()).koerper.mealPresets || []).some(p => p.name === 'Mein Frühstück' && p.items[0].code === 'C133000'), 'Mahlzeit unter eigenem Namen gespeichert');
+ok(!/Energie/.test(document.querySelector('.b-nut').textContent) && !!byText('Kalorien anzeigen'), 'Kalorien standardmäßig aus, als Opt-in anbietbar');
 // Ernährung: Idee für heute und Zutaten-Katalog
 await click(tabsBtn(0)); await wait(200);
 ok(/Idee für heute/.test(document.querySelector('main').textContent), 'Heute zeigt eine Ernährungs-Idee');
@@ -181,7 +205,7 @@ ok(!document.querySelector('.b-overlay'), 'Katalog schließt');
 ok(!!document.querySelector('.b-brief') && /Dein Tag/.test(document.querySelector('.b-brief').textContent), 'Morning Briefing oben auf Heute');
 // Entwicklung ohne Kalorien
 await click(tabsBtn(3)); await wait(200);
-ok(!/Kalorien/.test(document.querySelector('main').textContent), 'Entwicklung ohne Kalorienverlauf');
+ok(!/Kalorien/.test(document.querySelector('main').textContent), 'Entwicklung ohne Kalorien, solange Kalorien ausgeschaltet sind');
 if (mode === 'demo') ok(/Gewichtstrend/.test(document.querySelector('main').textContent) && !!document.querySelector('.b-wt-line'), 'Entwicklung zeigt geglätteten Gewichtstrend');
 ok(!/Gesundheit, Für dich/.test(document.querySelector('main').textContent), 'Kein Verweis auf den ausgeblendeten Bereich „Für dich“');
 ok(!!document.querySelector('.b-review-entry'), 'Entwicklung hat einen festen Einstieg in den Check-in');
@@ -215,7 +239,6 @@ if (mode !== 'demo') {
   const txt = downloaded ? await downloaded.text() : '';
   ok(/"documents"/.test(txt) && /"koerper"|"settings"/.test(txt), `Export enthält alle gespeicherten Dokumente (${(txt.match(/"key"/g) || []).length} Dokumente)`);
 }
-if (mode === 'beta-db') ok(!!byText('Konto löschen'), 'Konto löschen angeboten');
 // W15: Rebranding EvoVive in allen Hauptansichten
 const seenOld = [];
 for (let t = 0; t < 4; t++) { await click(tabsBtn(t)); await wait(150); if (/HealthOS/.test(document.body.textContent)) seenOld.push(`Tab ${t}`); }

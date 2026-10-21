@@ -8,7 +8,8 @@ import { browserBackend, supabaseBackend } from '../storage/backends';
 import { supabase } from '../lib/supabase';
 
 // beta-2: Gewicht und Körperwerte hinzugekommen (Entscheidung E-11). Wer nur beta-1 erteilt hat, wird erneut gefragt.
-export const CONSENT_VERSION = 'beta-2';
+// beta-4: Mahlzeiten hinzugekommen (W16). Wer nur beta-1 oder beta-2 erteilt hat, wird erneut gefragt.
+export const CONSENT_VERSION = 'beta-4';
 // Die Oberfläche ist generiertes JavaScript aus der Referenz, ihre Eigenschaften werden hier typisiert.
 const App = LegacyApp as unknown as React.ComponentType<{ account?: { email?: string; signOut: () => void; supabase?: SupabaseClient; userId?: string } }>;
 
@@ -110,8 +111,8 @@ function BetaGate() {
     {phase.k === 'einwilligung' && <form onSubmit={e => consent(e, phase.user)}>
       <h1>Bevor es losgeht</h1>
       <p>EvoVive speichert für dein Konto:</p>
-      <ul><li>Ziele, Arbeitszeiten und Einstellungen</li><li>Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund</li><li>erledigte Trainingseinheiten und Schritte</li><li>Gewicht und Körperwerte wie Körperfett, wenn du sie einträgst</li><li>Reviews mit gewählten Maßnahmen, ohne deine Antworten</li></ul>
-      <p>Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen. Mahlzeiten, Blutwerte, Termine und Dokumente sind in der Beta ausgeschaltet. Eine KI-Auswertung von Waagen-Screenshots nutzt EvoVive nur nach einer eigenen, zusätzlichen Einwilligung. Du kannst alle gespeicherten Daten jederzeit in den Einstellungen exportieren und löschen.</p>
+      <ul><li>Ziele, Arbeitszeiten und Einstellungen</li><li>Routinen, Wochenplan, Gewohnheiten, Pausen ohne Grund</li><li>erledigte Trainingseinheiten und Schritte</li><li>Gewicht und Körperwerte wie Körperfett, wenn du sie einträgst</li><li>Mahlzeiten mit Mengen und Nährwerten, wenn du sie einträgst</li><li>Reviews mit gewählten Maßnahmen, ohne deine Antworten</li></ul>
+      <p>Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen. Blutwerte, Termine und Dokumente sind in der Beta ausgeschaltet. Eine KI-Auswertung von Waagen-Screenshots nutzt EvoVive nur nach einer eigenen, zusätzlichen Einwilligung. Du kannst alle gespeicherten Daten jederzeit in den Einstellungen exportieren und löschen.</p>
       <label className="check"><input type="checkbox" required /> <span>Ich willige ein, dass EvoVive diese Angaben für mich speichert und verarbeitet. Die Einwilligung ist freiwillig und jederzeit widerrufbar.</span></label>
       {phase.err && <p className="gate-err" role="alert">{phase.err}</p>}
       <button className="gate-btn" disabled={busy}>Einwilligen und starten</button>

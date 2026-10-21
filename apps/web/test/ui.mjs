@@ -44,7 +44,7 @@ let dbstand = null;
 if (mode === 'beta-db') {
   dbstand = await import('./dbstand.mjs'); await dbstand.start();
   const C = '33333333-3333-3333-3333-333333333333'; const sb = dbstand.client(C);
-  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-2' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
+  await sb.from('app_documents').delete().eq('user_id', C); await sb.from('beta_consents').delete().eq('user_id', C); const ins = await sb.from('beta_consents').insert({ user_id: C, version: 'beta-4' }); if (ins.error) throw new Error('Einwilligung im Testaufbau: ' + ins.error.message);
   backend = M.supabaseBackend(sb, C);
   if (process.env.DEBUG) { const put0 = backend.put; backend.put = async (k, b) => { const t0 = Date.now(); try { await put0(k, b); console.log('  put ok', k, Date.now() - t0, 'ms'); } catch (e) { console.log('  put FEHLER', k, e.message); throw e; } }; }
   process.on('exit', () => dbstand.stop());
@@ -76,7 +76,7 @@ ok(tabs.length === 4 && !tabs.includes('Gesundheit'), `Navigation ohne Gesundhei
 ok(!/Empfehlung für dich|Nächste Termine/.test(text()), 'Heute ohne Empfehlungen und Arzttermine');
 ok([...document.querySelectorAll('.stat')].some(s => /Gewicht/.test(s.textContent)), 'Heute zeigt die Gewicht-Kachel');
 const quick = [...document.querySelectorAll('.quick-btn')].map(b => b.textContent);
-ok(quick.join() === 'Gewicht,Schritte,Training', `Schnell erfassen: Gewicht, Schritte, Training (${quick.join(', ')})`);
+ok(quick.join() === 'Gewicht,Schritte,Training,Mahlzeit', `Schnell erfassen: Gewicht, Schritte, Training, Mahlzeit (${quick.join(', ')})`);
 if (mode !== 'demo') ok(!/fiktiv/i.test(text()) && /Geschlossene Beta/.test(text()), 'Beta zeigt keine Demo-Daten');
 if (mode === 'demo') ok(/Demo, fiktive Daten/.test(text()), 'Demo ist als fiktiv gekennzeichnet');
 const keys = Object.keys(await docsNow());
@@ -86,7 +86,7 @@ ok(['settings', 'plan', 'habits', 'activity'].every(k => keys.includes(k)) && ke
 // Training erfassen und dauerhaft speichern
 await click(byText(/Erfassen$/) || [...document.querySelectorAll('.tabbar button')][2]);
 const segs = [...document.querySelectorAll('.seg button, [role="radio"], [role="tab"]')].map(b => b.textContent.trim());
-ok(segs.includes('Gewicht') && !segs.includes('Mahlzeit'), `Erfassen mit Gewicht, ohne Mahlzeiten (${segs.join(', ')})`);
+ok(segs.includes('Gewicht') && segs.includes('Mahlzeit'), `Erfassen mit Gewicht und Mahlzeit (${segs.join(', ')})`);
 const dur = [...document.querySelectorAll('input')].find(i => (i.getAttribute('aria-label') || '').includes('Dauer') || (i.id && document.querySelector(`label[for="${i.id}"]`)?.textContent.includes('Dauer')));
 if (dur) await setVal(dur, '35');
 await click(byText('Training speichern')); await wait(1200);
@@ -115,7 +115,7 @@ ok(/Als Nächstes/.test(text()) && !/Was möchtest du erreichen/.test(text()), '
 await click([...document.querySelectorAll('.tabbar button')][2]);
 ok(/35 Min|Laufen|Krafttraining|Training/.test(text()), 'Erfasste Einheit nach dem Neuladen sichtbar');
 const docs = JSON.stringify(await docsNow());
-const all = await docsNow(); const bad = Object.entries(all).filter(([k, b]) => ['labs', 'meals', 'appointments'].some(x => x in b) || (k !== 'koerper' && 'weights' in b)).map(([k]) => k); ok(!bad.length, `Keine Labor-, Mahlzeit- oder Termindaten, Gewicht nur in „koerper“ ${bad.join(', ')}`);
+const all = await docsNow(); const bad = Object.entries(all).filter(([k, b]) => ['labs', 'appointments', 'documents'].some(x => x in b) || (k !== 'koerper' && ('weights' in b || 'meals' in b))).map(([k]) => k); ok(!bad.length, `Keine Labor- oder Termindaten, Gewicht und Mahlzeiten nur in „koerper“ ${bad.join(', ')}`);
 
 // Einstellungen: Konto, Speicher, Löschen
 await click(document.querySelector('button[aria-label="Einstellungen"]'));

@@ -166,3 +166,18 @@
 .brand-text { font-family:var(--display); font-weight:600; letter-spacing:-0.01em; }
 .brand-text b { font-weight:inherit; color:var(--primary); }
 .b-ring-fg.full { stroke:var(--gold, #D99A2B); }
+.b-meal-sec{margin:10px 0}
+.b-results{list-style:none;padding:0;margin:6px 0;display:grid;gap:6px;max-height:340px;overflow:auto}
+.b-results button{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;color:var(--ink);font:inherit}
+.b-results b{display:block}
+.b-results span{font-size:.8125rem;color:var(--muted)}
+.b-preset{display:inline-flex;align-items:center;gap:2px}
+.b-x{border:0;background:none;font-size:1.1rem;color:var(--muted);cursor:pointer;min-width:32px;min-height:32px}
+.b-today-meals{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.b-today-meals li{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:4px 0}
+.b-today-meals small{color:var(--muted)}
+.b-nut{margin-top:12px}
+.b-nut-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;margin:8px 0}
+.b-nut-bar{grid-column:1 / -1;height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;display:block}
+.b-nut-bar s{display:block;height:100%;background:var(--primary);text-decoration:none}
+.b-src-line{font-size:.75rem;color:var(--muted);margin:8px 0 0}
